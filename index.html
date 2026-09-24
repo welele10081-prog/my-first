@@ -4,275 +4,306 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TubeTycoon — Симулятор Ютубера</title>
-<meta name="description" content="Мощный симулятор карьеры ютубера: видео, стримы, команда, конкуренты, квесты, престиж и play-кнопки.">
+<meta name="description" content="Большой симулятор ютубера: студия, темы видео, комментарии, мерч, спонсоры, команда, конкуренты, квесты, престиж, уровни и play-кнопки.">
 <style>
+  /* ===================== ТЕМЫ ===================== */
   :root{
-    --bg:#080a08; --panel:#111511; --panel2:#161c16; --line:#242e24;
-    --txt:#e6efe6; --muted:#8fa38f; --accent:#39d353; --accent2:#2ea043;
-    --gold:#f2c14e; --silver:#c9d1d9; --diamond:#7ee3ff; --ruby:#ff5c7a; --purple:#c98bff;
-    --danger:#ff6b6b; --warn:#ffcf5c; --radius:14px;
-    --shadow:0 6px 24px rgba(0,0,0,.45);
+    --bg0:#070907; --bg1:#0d110d; --panel:#121812; --panel2:#182018; --panelHi:#1e281e;
+    --line:#263126; --line2:#334133;
+    --txt:#e8f0e8; --muted:#8ea38e; --muted2:#6f846f;
+    --accent:#39d353; --accent2:#2ea043; --accentInk:#04230d;
+    --glow1:rgba(57,211,83,.12); --glow2:rgba(46,160,67,.10);
+    --gold:#f2c14e; --silver:#c9d1d9; --diamond:#7ee3ff; --ruby:#ff5c7a; --purple:#c98bff; --blue:#5aa9ff;
+    --danger:#ff6b6b; --warn:#ffcf5c;
+    --radius:16px; --radius-sm:11px;
+    --shadow:0 8px 30px rgba(0,0,0,.5); --shadow-sm:0 3px 12px rgba(0,0,0,.4);
+    --sb:236px;
+  }
+  :root[data-theme="midnight"]{
+    --bg0:#05070d; --bg1:#0a0f1a; --panel:#0f1522; --panel2:#141c2c; --panelHi:#1a2438;
+    --line:#233047; --line2:#31425f; --txt:#e6edf7; --muted:#8497b5;
+    --accent:#5aa9ff; --accent2:#2f6fd6; --accentInk:#04122b;
+    --glow1:rgba(90,169,255,.14); --glow2:rgba(47,111,214,.10);
+  }
+  :root[data-theme="sunset"]{
+    --bg0:#0d0705; --bg1:#160b08; --panel:#1a0f0b; --panel2:#231411; --panelHi:#2c1a15;
+    --line:#3a231b; --line2:#4d2f24; --txt:#f6ece6; --muted:#b58f84;
+    --accent:#ff8a4a; --accent2:#e0552b; --accentInk:#2b0f04;
+    --glow1:rgba(255,138,74,.14); --glow2:rgba(224,85,43,.10);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(57,211,83,.10), transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, rgba(46,160,67,.08), transparent 60%),
-      var(--bg);
-    color:var(--txt);
+    background:var(--bg0); color:var(--txt);
     font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
-    min-height:100vh; line-height:1.45; -webkit-font-smoothing:antialiased;
+    min-height:100vh; line-height:1.45; -webkit-font-smoothing:antialiased; overflow-x:hidden;
   }
+  #bg{position:fixed;inset:0;z-index:-2;pointer-events:none}
+  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1200px 700px at 85% -8%,var(--glow1),transparent 60%),
+               radial-gradient(1000px 600px at -10% 110%,var(--glow2),transparent 60%);}
   a{color:var(--accent)}
-  .wrap{max-width:1100px;margin:0 auto;padding:16px}
   .hidden{display:none !important}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
 
-  #onboard{max-width:740px;margin:5vh auto;padding:16px}
-  .logo{font-size:clamp(28px,6vw,46px);font-weight:800;letter-spacing:-1px;text-align:center;margin:0 0 6px}
-  .logo .play{color:var(--accent)}
-  .tag{text-align:center;color:var(--muted);margin:0 0 22px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-  .field{margin:14px 0}
-  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
-  input[type=text]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:16px}
-  input[type=text]:focus{outline:none;border-color:var(--accent)}
+  /* ===================== ONBOARDING ===================== */
+  #onboard{max-width:760px;margin:4vh auto;padding:18px}
+  .logo{font-size:clamp(30px,7vw,52px);font-weight:900;letter-spacing:-1.5px;text-align:center;margin:0 0 4px;
+    background:linear-gradient(120deg,var(--txt),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .tag{text-align:center;color:var(--muted);margin:0 0 20px;font-size:15px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg1));border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .field{margin:16px 0}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  input[type=text]{width:100%;padding:13px 15px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:16px}
+  input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--glow1)}
+  input[type=range]{width:100%;accent-color:var(--accent)}
   .niches{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
-  .niche{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:12px;text-align:center;transition:.15s;user-select:none}
+  .niche{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius-sm);padding:13px;text-align:center;transition:.15s;user-select:none}
   .niche:hover{border-color:var(--accent2);transform:translateY(-2px)}
-  .niche.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(57,211,83,.25) inset}
-  .niche .em{font-size:26px;display:block}
-  .niche .nm{font-weight:700;margin-top:4px}
+  .niche.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow1) inset,var(--shadow-sm)}
+  .niche .em{font-size:27px;display:block}
+  .niche .nm{font-weight:700;margin-top:5px}
   .niche .rp{font-size:11px;color:var(--muted)}
+  .avatars{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:8px;margin-top:8px}
+  .av-opt{cursor:pointer;aspect-ratio:1;border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:24px;transition:.15s;user-select:none}
+  .av-opt:hover{border-color:var(--accent2);transform:translateY(-2px)}
+  .av-opt.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow1) inset}
 
-  .btn{cursor:pointer;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;background:var(--accent);color:#05230d;transition:.15s}
-  .btn:hover{filter:brightness(1.08)}
+  /* ===================== КНОПКИ ===================== */
+  .btn{cursor:pointer;border:none;border-radius:var(--radius-sm);padding:12px 18px;font-size:15px;font-weight:700;
+    background:linear-gradient(180deg,var(--accent),var(--accent2));color:var(--accentInk);transition:.15s;position:relative;overflow:hidden}
+  .btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
   .btn:active{transform:translateY(1px)}
-  .btn.block{width:100%;margin-top:18px;font-size:17px;padding:14px}
-  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
-  .btn.ghost:hover{border-color:var(--accent)}
+  .btn.block{width:100%;margin-top:18px;font-size:17px;padding:15px}
+  .btn.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent);filter:none}
   .btn.sm{padding:8px 12px;font-size:13px}
   .btn.danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
-  .btn.gold{background:var(--gold);color:#3a2a00}
-  .btn.purple{background:var(--purple);color:#2a0a3a}
-  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.gold{background:linear-gradient(180deg,var(--gold),#c9982f);color:#2a1c00}
+  .btn.purple{background:linear-gradient(180deg,var(--purple),#8f5cd6);color:#210a35}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
 
-  header.top{position:sticky;top:0;z-index:20;background:rgba(8,10,8,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  .top .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 16px}
-  .brand{font-weight:800;font-size:18px;white-space:nowrap;display:flex;align-items:center;gap:6px}
-  .brand .play{color:var(--accent)}
-  .brand .chip{font-size:11px;padding:1px 7px;border-radius:20px;background:var(--panel2);border:1px solid var(--line);color:var(--purple)}
-  .stats{display:flex;gap:13px;flex-wrap:wrap;flex:1;justify-content:flex-end}
-  .stat{display:flex;flex-direction:column;align-items:flex-end;min-width:60px}
-  .stat .v{font-weight:800;font-size:16px}
-  .stat .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .stat .v.money{color:var(--gold)} .stat .v.subs{color:var(--accent)}
-  .stat .v.rep{color:var(--diamond)} .stat .v.cr{color:var(--purple)}
-  .hdr-tools{display:flex;gap:6px;align-items:center}
-  .icobtn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:9px;padding:6px 9px;font-size:13px;font-weight:700}
-  .icobtn:hover{border-color:var(--accent)}
+  /* ===================== КАРКАС ПРИЛОЖЕНИЯ ===================== */
+  #app{display:flex;min-height:100vh}
+  #sidebar{width:var(--sb);flex:0 0 var(--sb);position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:linear-gradient(180deg,var(--panel),var(--bg1));border-right:1px solid var(--line);
+    display:flex;flex-direction:column;padding:16px 12px;gap:4px;z-index:30}
+  .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px}
+  .sb-brand .avatar{width:42px;height:42px;flex:0 0 auto}
+  .sb-brand .txt{min-width:0}
+  .sb-brand .nm{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-brand .rk{font-size:11px;color:var(--muted)}
+  .avatar{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:22px;
+    background:linear-gradient(135deg,var(--accent2),var(--bg1));border:1px solid var(--accent)}
+  .navitem{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;
+    color:var(--muted);font-weight:600;font-size:14px;transition:.13s;border:1px solid transparent;white-space:nowrap}
+  .navitem:hover{background:var(--panel2);color:var(--txt)}
+  .navitem.active{background:var(--panelHi);color:var(--txt);border-color:var(--line2)}
+  .navitem.active .ic{filter:drop-shadow(0 0 6px var(--accent))}
+  .navitem .ic{font-size:18px;width:22px;text-align:center}
+  .navitem .badge{margin-left:auto;min-width:18px;padding:0 5px;font-size:11px;border-radius:9px;background:var(--danger);color:#fff;text-align:center;font-weight:800}
+  .navitem .lock{margin-left:auto;font-size:12px;opacity:.6}
+  .sb-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
 
-  .energy-wrap{width:100%;max-width:240px}
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+
+  /* ===================== HUD (верхняя панель статов) ===================== */
+  #hud{position:sticky;top:0;z-index:25;background:color-mix(in srgb,var(--bg0) 86%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 18px}
+  .hud-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .hstat{display:flex;flex-direction:column;min-width:58px}
+  .hstat .v{font-weight:800;font-size:16px;line-height:1.1}
+  .hstat .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .hstat .v.subs{color:var(--accent)} .hstat .v.money{color:var(--gold)} .hstat .v.cr{color:var(--purple)} .hstat .v.rep{color:var(--diamond)}
+  .hud-spacer{flex:1}
+  .lvlchip{display:flex;align-items:center;gap:7px}
+  .lvlring{position:relative;width:34px;height:34px;flex:0 0 auto}
+  .lvlring svg{transform:rotate(-90deg)}
+  .lvlring .lv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .energy-wrap{min-width:150px;flex:1;max-width:280px}
   .energy-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px}
-  .energy-bar{height:9px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
-  .energy-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .3s}
-
-  .ticker{background:var(--panel);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
-  .ticker .inner{display:inline-block;padding:6px 16px;font-size:13px;color:var(--muted)}
+  .energy-bar{height:10px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+  .energy-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .35s;border-radius:6px}
+  .icobtn{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:10px;padding:7px 10px;font-size:14px;font-weight:700}
+  .icobtn:hover{border-color:var(--accent)}
+  .ticker{margin-top:8px;overflow:hidden;white-space:nowrap;font-size:12.5px;color:var(--muted)}
   .ticker b{color:var(--accent)}
 
-  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:thin}
-  nav.tabs button{white-space:nowrap;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:9px 14px;border-radius:10px;font-size:14px;font-weight:600}
-  nav.tabs button.active{color:var(--txt);border-color:var(--accent);background:var(--panel2)}
-  nav.tabs button .badge{display:inline-block;min-width:16px;padding:0 4px;margin-left:6px;font-size:11px;border-radius:8px;background:var(--danger);color:#fff}
+  #view{padding:18px;max-width:1120px;width:100%;margin:0 auto;flex:1}
 
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
-  .panel h2{margin:0 0 12px;font-size:18px}
-  .panel h3{margin:16px 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
+  /* ===================== ПАНЕЛИ / ОБЩЕЕ ===================== */
+  .panel{background:linear-gradient(180deg,var(--panel),var(--bg1));border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;margin-bottom:16px;box-shadow:var(--shadow-sm);animation:fadeIn .35s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .panel h2{margin:0 0 14px;font-size:19px;display:flex;align-items:center;gap:9px}
+  .panel h3{margin:18px 0 9px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .grid{display:grid;gap:14px}
   .muted{color:var(--muted)} .small{font-size:13px}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+  .pill.hot{border-color:var(--gold);color:var(--gold)} .pill.ok{border-color:var(--accent);color:var(--accent)}
 
-  .vtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-  .vtype{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel2);cursor:pointer;transition:.15s;position:relative}
-  .vtype:hover{border-color:var(--accent);transform:translateY(-2px)}
-  .vtype.stream{border-color:var(--ruby)} .vtype.stream:hover{border-color:var(--ruby)}
-  .vtype .t{font-weight:800;font-size:16px} .vtype .d{font-size:12px;color:var(--muted);margin:6px 0}
-  .vtype .cost{font-size:12px;color:var(--warn)}
-  .vtype.disabled{opacity:.45;pointer-events:none}
+  /* KPI-плитки */
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .kpi .box{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;transition:.2s;position:relative;overflow:hidden}
+  .kpi .box:hover{border-color:var(--accent2);transform:translateY(-2px)}
+  .kpi .box .v{font-size:22px;font-weight:800} .kpi .box .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .kpi .box .spark{margin-top:8px;height:30px}
 
-  .item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:10px}
-  .item .em{font-size:26px;width:34px;text-align:center}
+  /* карточки видео/тем */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .tile{border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px;background:var(--panel2);cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+  .tile:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-sm)}
+  .tile.disabled{opacity:.4;pointer-events:none} .tile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--glow1) inset}
+  .tile .big{font-size:26px;margin-bottom:5px} .tile .t{font-weight:800;font-size:15px} .tile .d{font-size:12px;color:var(--muted);margin:6px 0}
+  .tile .cost{font-size:12px;color:var(--warn)} .tile.stream{border-color:var(--ruby)}
+  .tile .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+
+  /* list item (shop/skills/team/merch) */
+  .item{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel2);margin-bottom:10px;transition:.15s}
+  .item:hover{border-color:var(--line2)}
+  .item .em{font-size:27px;width:36px;text-align:center;flex:0 0 auto}
   .item .info{flex:1;min-width:0} .item .info .nm{font-weight:700} .item .info .ds{font-size:12px;color:var(--muted)}
-  .lvlbar{display:flex;gap:3px;margin-top:5px} .lvlbar .seg{height:6px;flex:1;border-radius:3px;background:var(--line)} .lvlbar .seg.on{background:var(--accent)}
-  .item .buy{text-align:right;white-space:nowrap} .item .buy .price{font-size:12px;color:var(--gold);margin-bottom:5px}
+  .lvlbar{display:flex;gap:3px;margin-top:6px} .lvlbar .seg{height:6px;flex:1;border-radius:3px;background:var(--line)} .lvlbar .seg.on{background:var(--accent)}
+  .item .buy{text-align:right;white-space:nowrap;flex:0 0 auto} .item .buy .price{font-size:12px;color:var(--gold);margin-bottom:6px}
 
-  .feed{max-height:340px;overflow:auto;scrollbar-width:thin}
+  /* лента / комментарии */
+  .feed{max-height:340px;overflow:auto}
   .logline{padding:9px 12px;border-left:3px solid var(--line);margin-bottom:7px;background:var(--panel2);border-radius:0 8px 8px 0;font-size:14px}
   .logline.good{border-color:var(--accent)} .logline.bad{border-color:var(--danger)}
   .logline.viral{border-color:var(--gold);background:rgba(242,193,78,.08)} .logline.info{border-color:var(--diamond)}
   .logline .tm{font-size:11px;color:var(--muted);margin-right:6px}
+  .comment{display:flex;gap:10px;padding:11px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel2);margin-bottom:9px}
+  .comment .ava{width:32px;height:32px;border-radius:50%;background:var(--panelHi);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .comment .body{flex:1;min-width:0} .comment .who{font-weight:700;font-size:13px} .comment .txt{font-size:13px;color:var(--txt)}
+  .comment.replied{opacity:.5}
 
+  /* таблица */
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
   td.num{text-align:right;font-variant-numeric:tabular-nums} tr .vir{color:var(--gold)}
 
-  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin-bottom:8px}
-  .lb-row.you{border-color:var(--accent);box-shadow:0 0 0 1px rgba(57,211,83,.2) inset}
-  .lb-row .rk{font-weight:800;width:34px;color:var(--muted)} .lb-row.you .rk{color:var(--accent)}
-  .lb-row .nm{flex:1;font-weight:700} .lb-row .sb{font-weight:800;color:var(--accent)}
+  /* рейтинг */
+  .lb-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel2);margin-bottom:8px;transition:.15s}
+  .lb-row:hover{border-color:var(--line2)} .lb-row.you{border-color:var(--accent);box-shadow:0 0 0 1px var(--glow1) inset}
+  .lb-row .rk{font-weight:800;width:32px;color:var(--muted)} .lb-row.you .rk{color:var(--accent)}
+  .lb-row .nm{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis} .lb-row .sb{font-weight:800;color:var(--accent)}
   .lb-row .nn{font-size:11px;color:var(--muted);font-weight:400}
 
-  .quest{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:10px}
-  .quest .em{font-size:24px} .quest .info{flex:1}
-  .qbar{height:7px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:6px}
-  .qbar .fill{height:100%;background:var(--accent);transition:width .3s}
-  .quest .rew{color:var(--gold);font-weight:700;white-space:nowrap;font-size:13px}
-
-  .achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-  .ach{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel2);text-align:center;opacity:.4;transition:.2s}
-  .ach.got{opacity:1;border-color:var(--accent)}
-  .ach .em{font-size:30px} .ach .nm{font-weight:700;font-size:13px;margin-top:4px} .ach .ds{font-size:11px;color:var(--muted)}
-
-  #toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:460px}
-  .toast{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);font-weight:600;animation:pop .3s ease;max-width:100%}
-  .toast.bad{border-color:var(--danger)} .toast.gold{border-color:var(--gold)} .toast.purple{border-color:var(--purple)}
-  @keyframes pop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
-
-  #modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;display:flex;align-items:center;justify-content:center;padding:16px}
-  #modal .box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;max-width:480px;width:100%;box-shadow:var(--shadow)}
-  #modal h3{margin:0 0 10px}
-  #modal .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-  #modal .actions .btn{flex:1;min-width:120px}
-
-  canvas{width:100%;display:block;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
-  .trend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(57,211,83,.08);border:1px solid var(--accent2);border-radius:10px;padding:8px 12px;font-size:14px}
-  .trend .fire{font-size:18px}
-  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
-  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
-  .kpi .box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
-  .kpi .box .v{font-size:20px;font-weight:800} .kpi .box .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  footer{color:var(--muted);font-size:12px;text-align:center;padding:20px 0}
-  .prestige-box{border:1px solid var(--purple);background:rgba(201,139,255,.06)}
-
-  /* ---------- UI 3.0: полировка и эффекты ---------- */
-  #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90;display:none}
-  .float-num{position:fixed;z-index:80;pointer-events:none;font-weight:800;font-size:15px;
-    text-shadow:0 2px 8px rgba(0,0,0,.6);animation:floatUp 1.1s ease-out forwards;white-space:nowrap}
-  @keyframes floatUp{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-46px);opacity:0}}
-
-  /* аватар канала */
-  .avatar{width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
-    font-size:21px;background:linear-gradient(135deg,var(--accent2),#0d3d1a);border:1px solid var(--accent);flex:0 0 auto}
-  .avatars{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;margin-top:8px}
-  .av-opt{cursor:pointer;aspect-ratio:1;border:1px solid var(--line);background:var(--panel2);border-radius:12px;
-    display:flex;align-items:center;justify-content:center;font-size:24px;transition:.15s;user-select:none}
-  .av-opt:hover{border-color:var(--accent2);transform:translateY(-2px)}
-  .av-opt.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(57,211,83,.25) inset}
-
-  /* ранг создателя */
-  .rank{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid var(--line);background:var(--panel2)}
-
-  /* прогресс до следующей кнопки */
+  /* квесты / прогресс */
+  .quest{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel2);margin-bottom:10px}
+  .quest .em{font-size:23px} .quest .info{flex:1;min-width:0}
+  .qbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:7px}
+  .qbar .fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s}
+  .quest .rew{color:var(--gold);font-weight:800;white-space:nowrap;font-size:13px}
   .goalbar{margin-top:12px}
-  .goalbar .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .goalbar .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
   .goalbar .track{height:12px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
   .goalbar .fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:8px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
 
-  /* трофейная полка */
-  .shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px}
-  .trophy{position:relative;text-align:center;border:1px solid var(--line);border-radius:14px;padding:14px 8px;background:var(--panel2);opacity:.35;filter:grayscale(1);transition:.3s}
-  .trophy.got{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 18px rgba(242,193,78,.15)}
-  .trophy .big{font-size:34px;line-height:1}
-  .trophy .lb{font-size:11px;color:var(--muted);margin-top:6px;font-weight:700}
+  /* достижения / трофеи */
+  .achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .ach{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px;background:var(--panel2);text-align:center;opacity:.38;transition:.25s}
+  .ach.got{opacity:1;border-color:var(--accent);box-shadow:0 0 14px var(--glow1)}
+  .ach .em{font-size:30px} .ach .nm{font-weight:700;font-size:13px;margin-top:5px} .ach .ds{font-size:11px;color:var(--muted)}
+  .shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:11px}
+  .trophy{text-align:center;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 8px;background:var(--panel2);opacity:.35;filter:grayscale(1);transition:.35s}
+  .trophy.got{opacity:1;filter:none;border-color:var(--gold);box-shadow:0 0 18px rgba(242,193,78,.18)}
+  .trophy .big{font-size:34px;line-height:1} .trophy .lb{font-size:11px;color:var(--muted);margin-top:6px;font-weight:700}
 
-  /* кнопки-плитки видео: анимация клика + иконки */
-  .vtype{overflow:hidden}
-  .vtype::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(57,211,83,.28),transparent 45%);opacity:0;transition:opacity .4s}
-  .vtype:not(.disabled):active::after{opacity:1;transition:none}
-  .vtype .big{font-size:22px;margin-bottom:2px}
+  .trend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--glow1);border:1px solid var(--accent2);border-radius:var(--radius-sm);padding:9px 13px;font-size:14px}
 
-  /* общая полировка */
-  .btn{position:relative;overflow:hidden}
-  .panel{animation:fadeIn .35s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  nav.tabs button{transition:.15s;position:relative}
-  nav.tabs button.active::after{content:'';position:absolute;left:12px;right:12px;bottom:-4px;height:2px;background:var(--accent);border-radius:2px}
-  .stat .v{transition:color .2s}
-  .stat .v.bump{animation:bump .35s ease}
-  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
-  .lb-row{transition:.2s} .lb-row:hover{border-color:var(--accent2)}
-  .kpi .box{transition:.2s} .kpi .box:hover{border-color:var(--accent2);transform:translateY(-2px)}
-  .hint-keys{font-size:11px;color:var(--muted);margin-top:8px}
-  .hint-keys kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px}
+  /* тосты / модалка / эффекты */
+  #toasts{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:460px}
+  .toast{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);font-weight:700;animation:pop .3s ease}
+  .toast.bad{border-color:var(--danger)} .toast.gold{border-color:var(--gold)} .toast.purple{border-color:var(--purple)}
+  @keyframes pop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:70;display:flex;align-items:center;justify-content:center;padding:16px}
+  #modal .box{background:linear-gradient(180deg,var(--panel),var(--bg1));border:1px solid var(--line);border-radius:var(--radius);padding:22px;max-width:520px;width:100%;box-shadow:var(--shadow);max-height:90vh;overflow:auto}
+  #modal h3{margin:0 0 12px} #modal .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap} #modal .actions .btn{flex:1;min-width:120px}
+  #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90;display:none}
+  .float-num{position:fixed;z-index:80;pointer-events:none;font-weight:800;font-size:15px;text-shadow:0 2px 8px rgba(0,0,0,.6);animation:floatUp 1.1s ease-out forwards;white-space:nowrap}
+  @keyframes floatUp{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-46px);opacity:0}}
+  canvas.chart{width:100%;display:block;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+  .seg-toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg-toggle button{background:var(--panel2);color:var(--muted);border:none;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px}
+  .seg-toggle button.on{background:var(--accent);color:var(--accentInk)}
+  .hint-keys{font-size:11px;color:var(--muted);margin-top:8px} .hint-keys kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  textarea{width:100%;min-height:90px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-family:monospace;font-size:12px}
 
-  /* компактная шапка на узких экранах */
-  @media(max-width:640px){
-    .top .wrap{gap:8px;padding:8px 12px}
-    .brand{font-size:15px;order:1}
-    .hdr-tools{order:2;margin-left:auto}
-    .stats{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;gap:14px;padding-bottom:2px;scrollbar-width:none}
-    .stats::-webkit-scrollbar{display:none}
-    .stat{align-items:flex-start;min-width:auto}
-    .stat .v{font-size:15px}
-    .energy-wrap{order:4;max-width:none}
+  /* нижняя навигация (мобайл) */
+  #bottomnav{display:none}
+  footer.credit{color:var(--muted2);font-size:12px;text-align:center;padding:14px 0 90px}
+
+  /* ===================== АДАПТИВ ===================== */
+  @media(max-width:860px){
+    #sidebar{display:none}
+    #view{padding:14px 14px 96px}
+    #hud{padding:9px 14px}
+    #bottomnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;background:color-mix(in srgb,var(--bg0) 92%,transparent);
+      backdrop-filter:blur(10px);border-top:1px solid var(--line);overflow-x:auto;padding:6px 8px;gap:4px}
+    #bottomnav button{flex:0 0 auto;background:none;border:none;color:var(--muted);font-size:11px;font-weight:700;
+      display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:10px;cursor:pointer;position:relative}
+    #bottomnav button.active{color:var(--accent);background:var(--panel2)}
+    #bottomnav button .ic{font-size:19px}
+    #bottomnav button .badge{position:absolute;top:2px;right:6px;min-width:15px;height:15px;font-size:9px;border-radius:8px;background:var(--danger);color:#fff;display:flex;align-items:center;justify-content:center}
+    .hud-row{gap:12px} .hstat{min-width:auto}
+    #toasts{bottom:96px}
   }
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
 <canvas id="fx"></canvas>
 
+<!-- ONBOARDING -->
 <div id="onboard">
-  <h1 class="logo"><span class="play">▶</span> TubeTycoon</h1>
+  <h1 class="logo">▶ TubeTycoon</h1>
   <p class="tag" data-i18n="tagline"></p>
-  <div style="text-align:center;margin-bottom:14px">
-    <button class="icobtn" id="langBtnOnb">🌐 RU / EN</button>
-  </div>
+  <div style="text-align:center;margin-bottom:14px"><button class="icobtn" id="langBtnOnb">🌐 RU / EN</button></div>
   <div class="card">
-    <div class="field"><label data-i18n="pickAvatar"></label>
-      <div class="avatars" id="avatarGrid"></div></div>
-    <div class="field"><label data-i18n="channelName"></label>
-      <input type="text" id="chanName" maxlength="24" data-ph="channelPh"></div>
-    <div class="field"><label data-i18n="yourNiche"></label>
-      <div class="niches" id="nicheGrid"></div></div>
+    <div class="field"><label data-i18n="pickAvatar"></label><div class="avatars" id="avatarGrid"></div></div>
+    <div class="field"><label data-i18n="channelName"></label><input type="text" id="chanName" maxlength="24" data-ph="channelPh"></div>
+    <div class="field"><label data-i18n="yourNiche"></label><div class="niches" id="nicheGrid"></div></div>
     <button class="btn block" id="startBtn" data-i18n="createChannel"></button>
   </div>
-  <footer data-i18n="autosave"></footer>
+  <footer class="credit" data-i18n="autosave"></footer>
 </div>
 
-<div id="game" class="hidden">
-  <header class="top">
-    <div class="wrap">
-      <div class="brand"><span class="avatar" id="hdrAvatar">🎬</span> <span id="hdrName">Канал</span> <span class="rank" id="hdrRank"></span> <span class="chip hidden" id="hdrPrestige"></span></div>
-      <div class="stats">
-        <div class="stat"><span class="v subs" id="stSubs">0</span><span class="k" data-i18n="subs"></span></div>
-        <div class="stat"><span class="v" id="stViews">0</span><span class="k" data-i18n="views"></span></div>
-        <div class="stat"><span class="v money" id="stMoney">$0</span><span class="k" data-i18n="moneyK"></span></div>
-        <div class="stat"><span class="v cr" id="stCreative">0</span><span class="k" data-i18n="creative"></span></div>
-        <div class="stat"><span class="v rep" id="stRep">50</span><span class="k" data-i18n="rep"></span></div>
-        <div class="stat"><span class="v" id="stDay">1</span><span class="k" data-i18n="day"></span></div>
-      </div>
-      <div class="hdr-tools">
-        <button class="icobtn" id="muteBtn" title="sound">🔊</button>
-        <button class="icobtn" id="langBtn">🌐</button>
-      </div>
-      <div class="energy-wrap">
-        <div class="energy-top"><span>⚡ <span data-i18n="energy"></span></span><span id="enTxt">100/100</span></div>
-        <div class="energy-bar"><div class="energy-fill" id="enFill" style="width:100%"></div></div>
-      </div>
+<!-- GAME -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="sb-brand"><span class="avatar" id="sbAvatar">🎬</span>
+      <div class="txt"><div class="nm" id="sbName">Канал</div><div class="rk" id="sbRank"></div></div></div>
+    <div id="navList"></div>
+    <div class="sb-foot">
+      <button class="navitem" id="settingsBtn"><span class="ic">⚙️</span><span data-i18n="settings"></span></button>
     </div>
-  </header>
-  <div class="ticker"><div class="inner" id="ticker">…</div></div>
-
-  <div class="wrap">
-    <nav class="tabs" id="tabs"></nav>
-    <div id="tabContent"></div>
-    <footer>
-      <button class="btn ghost sm" id="saveBtn">💾 <span data-i18n="save"></span></button>
-      <button class="btn danger sm" id="resetBtn">🗑 <span data-i18n="reset"></span></button>
-    </footer>
-  </div>
+  </aside>
+  <main>
+    <div id="hud">
+      <div class="hud-row">
+        <div class="lvlchip"><div class="lvlring"><svg width="34" height="34"><circle cx="17" cy="17" r="14" fill="none" stroke="var(--line)" stroke-width="3"/><circle id="lvlArc" cx="17" cy="17" r="14" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="88"/></svg><span class="lv" id="lvlNum">1</span></div></div>
+        <div class="hstat"><span class="v subs" id="stSubs">0</span><span class="k" data-i18n="subs"></span></div>
+        <div class="hstat"><span class="v" id="stViews">0</span><span class="k" data-i18n="views"></span></div>
+        <div class="hstat"><span class="v money" id="stMoney">$0</span><span class="k" data-i18n="moneyK"></span></div>
+        <div class="hstat"><span class="v cr" id="stCreative">0</span><span class="k" data-i18n="creative"></span></div>
+        <div class="hstat"><span class="v rep" id="stRep">50</span><span class="k" data-i18n="rep"></span></div>
+        <div class="hstat"><span class="v" id="stDay">1</span><span class="k" data-i18n="day"></span></div>
+        <div class="hud-spacer"></div>
+        <div class="energy-wrap"><div class="energy-top"><span>⚡ <span data-i18n="energy"></span></span><span id="enTxt">100/100</span></div>
+          <div class="energy-bar"><div class="energy-fill" id="enFill" style="width:100%"></div></div></div>
+        <button class="icobtn" id="muteBtn">🔊</button>
+      </div>
+      <div class="ticker" id="ticker">…</div>
+    </div>
+    <div id="view"></div>
+    <footer class="credit">TubeTycoon · <span id="verLbl"></span></footer>
+  </main>
 </div>
+<nav id="bottomnav"></nav>
 
 <div id="toasts"></div>
 <div id="modal" class="hidden"><div class="box" id="modalBox"></div></div>
@@ -280,813 +311,753 @@
 <script>
 "use strict";
 /* =========================================================================
-   TubeTycoon — расширенный симулятор ютубера.
-   Возможности: видео + стримы, магазин студии, навыки, команда (idle-бонусы),
-   алгоритм рекомендаций, тренды, вирусы, сюжетные события с цепочками,
-   конкуренты + рейтинг, квесты, престиж (новый канал), звук, RU/EN.
+   TubeTycoon v4 — крупный симулятор ютубера.
+   Новый интерфейс (боковое меню + дашборд + темы) и новые системы:
+   темы видео, комментарии зрителей, мерч, спонсорские контракты,
+   опыт/уровень создателя, настройки с экспортом сейва, анимированный фон.
    ========================================================================= */
 
-/* ----------------------------- i18n словарь ----------------------------- */
+/* ============================ i18n ============================ */
 const DICT = {
-  ru:{
-    tagline:'Стань ютубером с нуля. Видео, стримы, команда, конкуренты, престиж.',
-    channelName:'Название канала', channelPh:'Например: Дикая Природа',
-    yourNiche:'Твоя ниша', createChannel:'Создать канал ▶',
-    autosave:'Прогресс сохраняется автоматически в этом браузере.',
-    subs:'Подписчики', views:'Просмотры', moneyK:'Деньги', creative:'Креатив', rep:'Репутация',
-    day:'День', energy:'Энергия', save:'Сохранить', reset:'Сбросить прогресс',
-    t_studio:'🎬 Студия', t_shop:'🛒 Магазин', t_skills:'📈 Навыки', t_team:'👥 Команда',
-    t_videos:'📼 Видео', t_quests:'🎯 Квесты', t_events:'📨 События', t_rivals:'🏆 Рейтинг', t_channel:'📊 Канал',
-    makeVideo:'Снять видео', nextDay:'💤 Следующий день (энергия +100%)', promo:'📣 Реклама канала',
-    feed:'📰 Лента', feedEmpty:'Пока пусто. Сними первое видео!',
-    shopTitle:'🛒 Магазин оборудования', shopHint:'Оборудование повышает качество роликов и охваты. Компьютер также поднимает максимум энергии.',
-    skillsTitle:'📈 Навыки', skillsHint:'Прокачка тратит деньги и 20 энергии. Навыки — главный множитель роста.',
-    teamTitle:'👥 Команда', teamHint:'Наёмники дают пассивные бонусы: экономят энергию, повышают качество, приносят доход и защищают от хейта.',
-    videosTitle:'📼 Мои видео', videosEmpty:'Ещё ничего не снято.',
-    questsTitle:'🎯 Активные квесты', questsHint:'Выполняй цели и получай награды. Новый квест появляется на месте выполненного.',
-    eventsTitle:'📨 События', eventsEmpty:'Новых событий нет. Снимай видео — они появляются по ходу дела.',
-    rivalsTitle:'🏆 Рейтинг блогеров', rivalsHint:'Конкуренты растут каждый день. Обгоняй их и поднимайся в топе.',
-    channelTitle:'📊 Аналитика канала', growth:'Рост подписчиков',
-    achsTitle:'🏅 Достижения', nextGoal:'Следующая цель', left:'осталось',
-    monetOn:'включена ✅', monetOff:'нет (нужно 1K подп.)', nicheL:'Ниша', monetL:'Монетизация',
-    buy:'Купить', learn:'Учить', hire:'Нанять', max:'MAX', lvl:'ур.',
-    lowEnergy:'Мало энергии — поспи 💤', lowMoney:'Не хватает денег', maxed:'Уже максимум',
-    saved:'💾 Сохранено', pickNiche:'Выбери нишу',
-    resetQ:'Сбросить прогресс?', resetT:'Весь канал будет удалён навсегда. Точно?',
-    cancel:'Отмена', yes:'Да',
-    trendNow:'Сейчас в тренде:', trendMine:'твоя ниша! x1.85 к охвату', trendNot:'не твоя ниша',
-    trendDays:'осталось {d} дн.',
-    prestigeTitle:'♻️ Престиж — новый канал', prestigeHint:'Начни заново, но с постоянным бонусом ко всему росту и доходу. Достижения сохраняются.',
-    prestigeBtn:'Начать новый канал (+15% навсегда)', prestigeLocked:'Доступно с 1 000 000 подписчиков',
-    prestigeChip:'Престиж {n} · +{p}%', channelsMade:'каналов создано',
-    liveStream:'🔴 Провести стрим', streamLocked:'нужно 100 подписчиков',
-    qk_subs:'Набрать {n} подписчиков', qk_videos:'Снять {n} видео', qk_viral:'Снять {n} вирусных видео',
-    qk_stream:'Провести {n} стримов', qk_skill:'Прокачать любой навык до ур. {n}', qk_money:'Накопить ${n}',
-    you:'ТЫ',
-    pickAvatar:'Аватар канала', trophyShelf:'🏆 Твои play-кнопки', collabDo:'🤝 Коллаб',
-    collabCooldown:'⏳ жди', keysHint:'Горячие клавиши: <kbd>Пробел</kbd> — снять обычное видео · <kbd>S</kbd> — стрим · <kbd>N</kbd> — новый день',
-    collabTip:'Совместное видео с конкурентом переманит часть его аудитории (−30 энергии).',
-    rankNames:['Новичок','Любитель','Автор','Профи','Звезда','Легенда','Икона'],
-  },
-  en:{
-    tagline:'Become a YouTuber from scratch. Videos, streams, team, rivals, prestige.',
-    channelName:'Channel name', channelPh:'e.g. Wild Nature',
-    yourNiche:'Your niche', createChannel:'Create channel ▶',
-    autosave:'Progress is saved automatically in this browser.',
-    subs:'Subscribers', views:'Views', moneyK:'Money', creative:'Creative', rep:'Reputation',
-    day:'Day', energy:'Energy', save:'Save', reset:'Reset progress',
-    t_studio:'🎬 Studio', t_shop:'🛒 Shop', t_skills:'📈 Skills', t_team:'👥 Team',
-    t_videos:'📼 Videos', t_quests:'🎯 Quests', t_events:'📨 Events', t_rivals:'🏆 Ranking', t_channel:'📊 Channel',
-    makeVideo:'Make a video', nextDay:'💤 Next day (energy +100%)', promo:'📣 Promote channel',
-    feed:'📰 Feed', feedEmpty:'Nothing yet. Make your first video!',
-    shopTitle:'🛒 Equipment shop', shopHint:'Gear boosts video quality and reach. The PC also raises max energy.',
-    skillsTitle:'📈 Skills', skillsHint:'Training costs money and 20 energy. Skills are the main growth multiplier.',
-    teamTitle:'👥 Team', teamHint:'Hires give passive perks: save energy, boost quality, earn income and shield you from hate.',
-    videosTitle:'📼 My videos', videosEmpty:'Nothing filmed yet.',
-    questsTitle:'🎯 Active quests', questsHint:'Complete goals for rewards. A new quest replaces each finished one.',
-    eventsTitle:'📨 Events', eventsEmpty:'No new events. Keep making videos — they show up along the way.',
-    rivalsTitle:'🏆 Creator ranking', rivalsHint:'Rivals grow every day. Overtake them and climb the leaderboard.',
-    channelTitle:'📊 Channel analytics', growth:'Subscriber growth',
-    achsTitle:'🏅 Achievements', nextGoal:'Next goal', left:'left',
-    monetOn:'on ✅', monetOff:'off (need 1K subs)', nicheL:'Niche', monetL:'Monetization',
-    buy:'Buy', learn:'Learn', hire:'Hire', max:'MAX', lvl:'lv.',
-    lowEnergy:'Low energy — get some sleep 💤', lowMoney:'Not enough money', maxed:'Already maxed',
-    saved:'💾 Saved', pickNiche:'Pick a niche',
-    resetQ:'Reset progress?', resetT:'The whole channel will be deleted forever. Sure?',
-    cancel:'Cancel', yes:'Yes',
-    trendNow:'Trending now:', trendMine:'your niche! x1.85 reach', trendNot:'not your niche',
-    trendDays:'{d} days left',
-    prestigeTitle:'♻️ Prestige — new channel', prestigeHint:'Start over with a permanent bonus to all growth and income. Achievements are kept.',
-    prestigeBtn:'Start a new channel (+15% forever)', prestigeLocked:'Unlocks at 1,000,000 subscribers',
-    prestigeChip:'Prestige {n} · +{p}%', channelsMade:'channels made',
-    liveStream:'🔴 Go live', streamLocked:'need 100 subscribers',
-    qk_subs:'Reach {n} subscribers', qk_videos:'Make {n} videos', qk_viral:'Make {n} viral videos',
-    qk_stream:'Do {n} live streams', qk_skill:'Level any skill to lv. {n}', qk_money:'Save up ${n}',
-    you:'YOU',
-    pickAvatar:'Channel avatar', trophyShelf:'🏆 Your play buttons', collabDo:'🤝 Collab',
-    collabCooldown:'⏳ wait', keysHint:'Hotkeys: <kbd>Space</kbd> — make normal video · <kbd>S</kbd> — stream · <kbd>N</kbd> — next day',
-    collabTip:'A collab with a rival pulls over part of their audience (−30 energy).',
-    rankNames:['Rookie','Amateur','Creator','Pro','Star','Legend','Icon'],
-  }
-};
-let LANG = 'ru';
-function t(k){ return (DICT[LANG] && DICT[LANG][k]) || (DICT.ru[k]) || k; }
-function tf(k,obj){ let s=t(k); for(const p in obj) s=s.replace('{'+p+'}',obj[p]); return s; }
-function L(o){ return (o && (o[LANG]||o.ru)) || ''; }
+ru:{
+  tagline:'Стань ютубером с нуля. Студия, мерч, спонсоры, команда, конкуренты, престиж.',
+  channelName:'Название канала', channelPh:'Например: Дикая Природа', yourNiche:'Твоя ниша',
+  pickAvatar:'Аватар канала', createChannel:'Создать канал ▶',
+  autosave:'Прогресс сохраняется автоматически в этом браузере.',
+  subs:'Подписчики', views:'Просмотры', moneyK:'Деньги', creative:'Креатив', rep:'Репутация',
+  day:'День', energy:'Энергия', settings:'Настройки', level:'Уровень',
+  t_dash:'Обзор', t_studio:'Студия', t_shop:'Магазин', t_skills:'Навыки', t_team:'Команда',
+  t_merch:'Мерч', t_deals:'Спонсоры', t_videos:'Видео', t_quests:'Квесты', t_events:'События',
+  t_rivals:'Рейтинг', t_channel:'Канал',
+  makeVideo:'Снять видео', pickTopic:'Выбери тему', reroll:'🔄 Новые темы',
+  nextDay:'💤 Следующий день', promo:'📣 Реклама канала', goLive:'🔴 Стрим',
+  feed:'Лента', comments:'Комментарии', reply:'Ответить', replied:'Отвечено',
+  noComments:'Комментарии появятся после выхода видео.',
+  shopTitle:'Магазин оборудования', shopHint:'Оборудование повышает качество и охваты. Компьютер поднимает макс. энергию.',
+  skillsTitle:'Навыки', skillsHint:'Прокачка тратит деньги и 20 энергии. Навыки — главный множитель роста.',
+  teamTitle:'Команда', teamHint:'Наёмники дают пассивные бонусы: энергия, качество, доход, защита от хейта.',
+  merchTitle:'Линейка мерча', merchHint:'Каждый дроп приносит пассивный доход каждый день и бонус к продажам на видео.',
+  merchLocked:'Мерч открывается с 5 000 подписчиков.',
+  dealsTitle:'Спонсорские контракты', dealsHint:'Подпиши контракт — стабильный доход каждый день, но небольшой минус к репутации. Активен один.',
+  dealsLocked:'Спонсоры появляются с 2 000 подписчиков.', dealActive:'Активный контракт', dealSign:'Подписать',
+  dealDaily:'в день', dealDays:'дней', dealNone:'Нет активного контракта.', dealOffers:'Предложения',
+  videosTitle:'Мои видео', videosEmpty:'Ещё ничего не снято.',
+  questsTitle:'Активные квесты', questsHint:'Выполняй цели и получай награды. Новый квест приходит на смену.',
+  eventsTitle:'События', eventsEmpty:'Новых событий нет. Снимай видео — они появляются по ходу дела.',
+  rivalsTitle:'Рейтинг блогеров', rivalsHint:'Конкуренты растут каждый день. Обгоняй их и поднимайся в топе.',
+  collabDo:'🤝 Коллаб', collabCooldown:'⏳ жди', collabTip:'Коллаб переманит часть аудитории конкурента (−30 энергии).',
+  channelTitle:'Аналитика канала', growth:'Динамика', achsTitle:'Достижения', trophyShelf:'Твои play-кнопки',
+  nextGoal:'Следующая цель', left:'осталось', nicheL:'Ниша', monetL:'Монетизация',
+  monetOn:'включена ✅', monetOff:'нет (нужно 1K подп.)',
+  dashTitle:'Обзор канала', recent:'Последнее', quickActions:'Быстрые действия',
+  buy:'Купить', learn:'Учить', hire:'Нанять', max:'MAX', lvl:'ур.', own:'куплено',
+  lowEnergy:'Мало энергии — поспи 💤', lowMoney:'Не хватает денег', maxed:'Уже максимум',
+  saved:'💾 Сохранено', pickNiche:'Выбери нишу',
+  resetQ:'Сбросить прогресс?', resetT:'Весь канал будет удалён навсегда. Точно?', cancel:'Отмена', yes:'Да',
+  trendNow:'В тренде:', trendMine:'твоя ниша! ×1.85', trendNot:'не твоя ниша', trendDays:'{d} дн.',
+  prestigeTitle:'Престиж — новый канал', prestigeHint:'Начни заново с постоянным бонусом ко всему росту и доходу. Достижения сохраняются.',
+  prestigeBtn:'Новый канал (+15% навсегда)', prestigeLocked:'Доступно с 1 000 000 подписчиков',
+  prestigeChip:'Престиж {n} · +{p}%', channelsMade:'каналов',
+  settingsTitle:'⚙️ Настройки', theme:'Тема оформления', sound:'Громкость звука', language:'Язык',
+  themeNature:'Природа', themeMidnight:'Полночь', themeSunset:'Закат',
+  exportSave:'Экспорт сейва', importSave:'Импорт сейва', copy:'Копировать', apply:'Применить',
+  importBad:'Не удалось прочитать сейв', imported:'Сейв загружен', copied:'Скопировано',
+  close:'Закрыть', reset:'Сбросить прогресс', save:'Сохранить',
+  qk_subs:'Набрать {n} подписчиков', qk_videos:'Снять {n} видео', qk_viral:'Снять {n} вирусных видео',
+  qk_stream:'Провести {n} стримов', qk_skill:'Прокачать навык до ур. {n}', qk_money:'Накопить ${n}',
+  you:'ТЫ', keysHint:'Клавиши: <kbd>Пробел</kbd> видео · <kbd>S</kbd> стрим · <kbd>N</kbd> день',
+  rankNames:['Новичок','Любитель','Автор','Профи','Звезда','Легенда','Икона'],
+  topicTags:['🔥 Хайп','🧠 Познавательно','😂 Смешно','💤 Спокойно','⚔️ Дерзко','❤️ Душевно'],
+  forecast:'Прогноз', fLow:'😐 слабый', fMid:'👍 хороший', fHot:'🔥 огонь',
+  merchNames:['Футболка','Худи','Кепка','Кружка','Постер','Фигурка','Стикерпак','Чехол'],
+  commentReplyGain:'Ответ зрителям', levelUp:'🎉 Новый уровень',
+},
+en:{
+  tagline:'Become a YouTuber from scratch. Studio, merch, sponsors, team, rivals, prestige.',
+  channelName:'Channel name', channelPh:'e.g. Wild Nature', yourNiche:'Your niche',
+  pickAvatar:'Channel avatar', createChannel:'Create channel ▶',
+  autosave:'Progress is saved automatically in this browser.',
+  subs:'Subscribers', views:'Views', moneyK:'Money', creative:'Creative', rep:'Reputation',
+  day:'Day', energy:'Energy', settings:'Settings', level:'Level',
+  t_dash:'Overview', t_studio:'Studio', t_shop:'Shop', t_skills:'Skills', t_team:'Team',
+  t_merch:'Merch', t_deals:'Sponsors', t_videos:'Videos', t_quests:'Quests', t_events:'Events',
+  t_rivals:'Ranking', t_channel:'Channel',
+  makeVideo:'Make a video', pickTopic:'Pick a topic', reroll:'🔄 New topics',
+  nextDay:'💤 Next day', promo:'📣 Promote channel', goLive:'🔴 Go live',
+  feed:'Feed', comments:'Comments', reply:'Reply', replied:'Replied',
+  noComments:'Comments will appear after a video goes out.',
+  shopTitle:'Equipment shop', shopHint:'Gear boosts quality and reach. The PC raises max energy.',
+  skillsTitle:'Skills', skillsHint:'Training costs money and 20 energy. Skills are the main growth multiplier.',
+  teamTitle:'Team', teamHint:'Hires give passive perks: energy, quality, income, hate shield.',
+  merchTitle:'Merch line', merchHint:'Each drop earns passive income every day and a sales bonus on videos.',
+  merchLocked:'Merch unlocks at 5,000 subscribers.',
+  dealsTitle:'Sponsorship contracts', dealsHint:'Sign a contract for steady daily income, at a small reputation cost. One active at a time.',
+  dealsLocked:'Sponsors unlock at 2,000 subscribers.', dealActive:'Active contract', dealSign:'Sign',
+  dealDaily:'per day', dealDays:'days', dealNone:'No active contract.', dealOffers:'Offers',
+  videosTitle:'My videos', videosEmpty:'Nothing filmed yet.',
+  questsTitle:'Active quests', questsHint:'Complete goals for rewards. A new quest replaces each finished one.',
+  eventsTitle:'Events', eventsEmpty:'No new events. Keep making videos — they show up along the way.',
+  rivalsTitle:'Creator ranking', rivalsHint:'Rivals grow every day. Overtake them and climb the leaderboard.',
+  collabDo:'🤝 Collab', collabCooldown:'⏳ wait', collabTip:'A collab pulls over part of a rival\'s audience (−30 energy).',
+  channelTitle:'Channel analytics', growth:'Trends', achsTitle:'Achievements', trophyShelf:'Your play buttons',
+  nextGoal:'Next goal', left:'left', nicheL:'Niche', monetL:'Monetization',
+  monetOn:'on ✅', monetOff:'off (need 1K subs)',
+  dashTitle:'Channel overview', recent:'Recent', quickActions:'Quick actions',
+  buy:'Buy', learn:'Learn', hire:'Hire', max:'MAX', lvl:'lv.', own:'owned',
+  lowEnergy:'Low energy — get some sleep 💤', lowMoney:'Not enough money', maxed:'Already maxed',
+  saved:'💾 Saved', pickNiche:'Pick a niche',
+  resetQ:'Reset progress?', resetT:'The whole channel will be deleted forever. Sure?', cancel:'Cancel', yes:'Yes',
+  trendNow:'Trending:', trendMine:'your niche! ×1.85', trendNot:'not your niche', trendDays:'{d}d',
+  prestigeTitle:'Prestige — new channel', prestigeHint:'Start over with a permanent bonus to all growth and income. Achievements are kept.',
+  prestigeBtn:'New channel (+15% forever)', prestigeLocked:'Unlocks at 1,000,000 subscribers',
+  prestigeChip:'Prestige {n} · +{p}%', channelsMade:'channels',
+  settingsTitle:'⚙️ Settings', theme:'Theme', sound:'Sound volume', language:'Language',
+  themeNature:'Nature', themeMidnight:'Midnight', themeSunset:'Sunset',
+  exportSave:'Export save', importSave:'Import save', copy:'Copy', apply:'Apply',
+  importBad:'Could not read save', imported:'Save loaded', copied:'Copied',
+  close:'Close', reset:'Reset progress', save:'Save',
+  qk_subs:'Reach {n} subscribers', qk_videos:'Make {n} videos', qk_viral:'Make {n} viral videos',
+  qk_stream:'Do {n} live streams', qk_skill:'Level a skill to lv. {n}', qk_money:'Save up ${n}',
+  you:'YOU', keysHint:'Keys: <kbd>Space</kbd> video · <kbd>S</kbd> stream · <kbd>N</kbd> day',
+  rankNames:['Rookie','Amateur','Creator','Pro','Star','Legend','Icon'],
+  topicTags:['🔥 Hype','🧠 Smart','😂 Funny','💤 Chill','⚔️ Bold','❤️ Heartfelt'],
+  forecast:'Forecast', fLow:'😐 weak', fMid:'👍 good', fHot:'🔥 fire',
+  merchNames:['T-shirt','Hoodie','Cap','Mug','Poster','Figure','Sticker pack','Phone case'],
+  commentReplyGain:'Replied to viewers', levelUp:'🎉 Level up',
+}};
+let LANG='ru';
+function t(k){ return (DICT[LANG]&&DICT[LANG][k])!==undefined?DICT[LANG][k]:(DICT.ru[k]!==undefined?DICT.ru[k]:k); }
+function tf(k,o){ let s=t(k); for(const p in o) s=(''+s).split('{'+p+'}').join(o[p]); return s; }
+function L(o){ return (o&&(o[LANG]||o.ru))||''; }
 
-/* ------------------------------- Данные ------------------------------- */
-const NICHES = {
-  gaming:  {nm:{ru:'Гейминг',en:'Gaming'}, em:'🎮', rpm:1.9, appeal:1.15, disc:1.05,
-    titles:{ru:['Прошёл игру за 1 час','ТОП-10 моментов','Реакция на трейлер','Челлендж на выживание','Секретная концовка'],
-            en:['Beat the game in 1 hour','TOP-10 moments','Trailer reaction','Survival challenge','Secret ending']}},
-  vlog:    {nm:{ru:'Влоги',en:'Vlogs'}, em:'📹', rpm:2.4, appeal:1.05, disc:0.95,
-    titles:{ru:['Один день из жизни','Дешёвое vs дорогое','24 часа в …','Мой переезд','Что я ем за день'],
-            en:['A day in my life','Cheap vs expensive','24 hours in …','My big move','What I eat in a day']}},
-  tech:    {nm:{ru:'Технологии',en:'Tech'}, em:'💻', rpm:4.6, appeal:0.9, disc:0.9,
-    titles:{ru:['Обзор флагмана','Собрал ПК за копейки','5 гаджетов будущего','Тест на прочность','AI изменил всё'],
-            en:['Flagship review','Budget PC build','5 future gadgets','Durability test','AI changed everything']}},
-  music:   {nm:{ru:'Музыка',en:'Music'}, em:'🎵', rpm:1.3, appeal:1.1, disc:1.1,
-    titles:{ru:['Кавер на хит','Бит за 10 минут','Реакция на альбом','Угадай песню','Мой новый трек'],
-            en:['Hit song cover','Beat in 10 minutes','Album reaction','Guess the song','My new track']}},
-  cooking: {nm:{ru:'Кулинария',en:'Cooking'}, em:'🍳', rpm:3.3, appeal:1.0, disc:1.0,
-    titles:{ru:['Уличная еда','Рецепт за 5 минут','Дорогое vs дешёвое блюдо','Пеку торт впервые','Кухня другой страны'],
-            en:['Street food','5-minute recipe','Expensive vs cheap dish','Baking a cake first time','Cuisine of another country']}},
-  edu:     {nm:{ru:'Обучение',en:'Education'}, em:'📚', rpm:3.9, appeal:0.85, disc:0.85,
-    titles:{ru:['Объясняю просто сложное','История за 10 минут','Как это работает','5 удивительных фактов','Мифы, в которые все верят'],
-            en:['Complex made simple','History in 10 minutes','How it works','5 surprising facts','Myths everyone believes']}},
-  nature:  {nm:{ru:'Природа',en:'Nature'}, em:'🌲', rpm:2.9, appeal:1.08, disc:1.05,
-    titles:{ru:['Ночь в лесу в палатке','Звуки природы 4K','Поход к водопаду','Встретил дикого зверя','Дикий остров в одиночку'],
-            en:['Night in a forest tent','Nature sounds 4K','Hike to a waterfall','Met a wild animal','Alone on a wild island']}},
-  fitness: {nm:{ru:'Спорт',en:'Fitness'}, em:'💪', rpm:3.1, appeal:1.0, disc:0.95,
-    titles:{ru:['30 дней челлендж','Тренировка дома','Мой прогресс за год','Разбор техники','Питание для формы'],
-            en:['30-day challenge','Home workout','My 1-year progress','Form breakdown','Diet for shape']}},
+/* ============================ ДАННЫЕ ============================ */
+const NICHES={
+  gaming:{nm:{ru:'Гейминг',en:'Gaming'},em:'🎮',rpm:1.9,appeal:1.15,disc:1.05,titles:{ru:['Прошёл игру за час','ТОП-10 моментов','Реакция на трейлер','Челлендж на выживание','Секретная концовка'],en:['Beat it in an hour','TOP-10 moments','Trailer reaction','Survival challenge','Secret ending']}},
+  vlog:{nm:{ru:'Влоги',en:'Vlogs'},em:'📹',rpm:2.4,appeal:1.05,disc:0.95,titles:{ru:['День из жизни','Дёшево vs дорого','24 часа в …','Мой переезд','Что я ем за день'],en:['A day in my life','Cheap vs pricey','24 hours in …','My big move','What I eat in a day']}},
+  tech:{nm:{ru:'Технологии',en:'Tech'},em:'💻',rpm:4.6,appeal:0.9,disc:0.9,titles:{ru:['Обзор флагмана','ПК за копейки','5 гаджетов будущего','Тест на прочность','AI изменил всё'],en:['Flagship review','Budget PC','5 future gadgets','Durability test','AI changed it all']}},
+  music:{nm:{ru:'Музыка',en:'Music'},em:'🎵',rpm:1.3,appeal:1.1,disc:1.1,titles:{ru:['Кавер на хит','Бит за 10 минут','Реакция на альбом','Угадай песню','Мой новый трек'],en:['Hit cover','Beat in 10 min','Album reaction','Guess the song','My new track']}},
+  cooking:{nm:{ru:'Кулинария',en:'Cooking'},em:'🍳',rpm:3.3,appeal:1.0,disc:1.0,titles:{ru:['Уличная еда','Рецепт за 5 минут','Дорогое vs дешёвое','Пеку торт впервые','Кухня другой страны'],en:['Street food','5-min recipe','Pricey vs cheap','First cake','Foreign cuisine']}},
+  edu:{nm:{ru:'Обучение',en:'Education'},em:'📚',rpm:3.9,appeal:0.85,disc:0.85,titles:{ru:['Просто о сложном','История за 10 минут','Как это работает','5 фактов','Мифы, в которые верят'],en:['Complex made simple','History in 10 min','How it works','5 facts','Myths people believe']}},
+  nature:{nm:{ru:'Природа',en:'Nature'},em:'🌲',rpm:2.9,appeal:1.08,disc:1.05,titles:{ru:['Ночь в лесу','Звуки природы 4K','Поход к водопаду','Встретил зверя','Дикий остров'],en:['Night in a forest','Nature sounds 4K','Waterfall hike','Met a wild animal','A wild island']}},
+  fitness:{nm:{ru:'Спорт',en:'Fitness'},em:'💪',rpm:3.1,appeal:1.0,disc:0.95,titles:{ru:['30 дней челлендж','Тренировка дома','Прогресс за год','Разбор техники','Питание для формы'],en:['30-day challenge','Home workout','1-year progress','Form breakdown','Diet for shape']}},
 };
-const EQUIP = {
-  camera:{nm:{ru:'Камера',en:'Camera'},        em:'📷', base:150, scale:1.85, ds:{ru:'Качество картинки',en:'Picture quality'}},
-  mic:   {nm:{ru:'Микрофон',en:'Microphone'},  em:'🎙️', base:90,  scale:1.8,  ds:{ru:'Чистота звука',en:'Audio clarity'}},
-  pc:    {nm:{ru:'Компьютер',en:'Computer'},   em:'🖥️', base:400, scale:1.95, ds:{ru:'Монтаж и макс. энергия',en:'Editing & max energy'}},
-  light: {nm:{ru:'Освещение',en:'Lighting'},   em:'💡', base:70,  scale:1.75, ds:{ru:'Профессиональный вид',en:'Professional look'}},
-  soft:  {nm:{ru:'Софт монтажа',en:'Editing software'}, em:'🎬', base:120, scale:1.85, ds:{ru:'Эффекты и доход',en:'Effects & revenue'}},
-  studio:{nm:{ru:'Студия',en:'Studio'},        em:'🏠', base:800, scale:2.05, ds:{ru:'Общий буст качества',en:'Overall quality boost'}},
+const EQUIP={
+  camera:{nm:{ru:'Камера',en:'Camera'},em:'📷',base:150,scale:1.85,ds:{ru:'Качество картинки',en:'Picture quality'}},
+  mic:{nm:{ru:'Микрофон',en:'Microphone'},em:'🎙️',base:90,scale:1.8,ds:{ru:'Чистота звука',en:'Audio clarity'}},
+  pc:{nm:{ru:'Компьютер',en:'Computer'},em:'🖥️',base:400,scale:1.95,ds:{ru:'Монтаж и макс. энергия',en:'Editing & max energy'}},
+  light:{nm:{ru:'Освещение',en:'Lighting'},em:'💡',base:70,scale:1.75,ds:{ru:'Профессиональный вид',en:'Professional look'}},
+  soft:{nm:{ru:'Софт монтажа',en:'Editing software'},em:'🎬',base:120,scale:1.85,ds:{ru:'Эффекты и доход',en:'Effects & revenue'}},
+  studio:{nm:{ru:'Студия',en:'Studio'},em:'🏠',base:800,scale:2.05,ds:{ru:'Общий буст качества',en:'Overall quality boost'}},
 };
-const EQUIP_MAX = 10;
-const SKILLS = {
-  editing: {nm:{ru:'Монтаж',en:'Editing'},   em:'✂️', ds:{ru:'Качество и удержание',en:'Quality & retention'}},
-  charisma:{nm:{ru:'Харизма',en:'Charisma'}, em:'😎', ds:{ru:'Конверсия в подписчиков',en:'Subscriber conversion'}},
-  seo:     {nm:{ru:'SEO / Алго',en:'SEO / Algo'}, em:'🔍', ds:{ru:'Попадание в рекомендации',en:'Getting into recommendations'}},
-  thumb:   {nm:{ru:'Обложки',en:'Thumbnails'}, em:'🖼️', ds:{ru:'Кликабельность (CTR)',en:'Click-through rate'}},
-  writing: {nm:{ru:'Сценарий',en:'Writing'}, em:'📝', ds:{ru:'Глубина и виральность',en:'Depth & virality'}},
+const EQUIP_MAX=10;
+const SKILLS={
+  editing:{nm:{ru:'Монтаж',en:'Editing'},em:'✂️',ds:{ru:'Качество и удержание',en:'Quality & retention'}},
+  charisma:{nm:{ru:'Харизма',en:'Charisma'},em:'😎',ds:{ru:'Конверсия в подписчиков',en:'Subscriber conversion'}},
+  seo:{nm:{ru:'SEO / Алго',en:'SEO / Algo'},em:'🔍',ds:{ru:'Попадание в рекомендации',en:'Into recommendations'}},
+  thumb:{nm:{ru:'Обложки',en:'Thumbnails'},em:'🖼️',ds:{ru:'Кликабельность (CTR)',en:'Click-through rate'}},
+  writing:{nm:{ru:'Сценарий',en:'Writing'},em:'📝',ds:{ru:'Глубина и виральность',en:'Depth & virality'}},
 };
-const SKILL_MAX = 10;
-const VTYPES = {
-  short:  {nm:{ru:'Shorts',en:'Shorts'},              energy:12, effort:0.5, cr:1, ds:{ru:'Быстро, дёшево, ловит охваты',en:'Fast, cheap, grabs reach'}},
-  quick:  {nm:{ru:'Быстрое видео',en:'Quick video'},  energy:22, effort:0.8, cr:1, ds:{ru:'Меньше сил — меньше отдачи',en:'Less effort, less payoff'}},
-  normal: {nm:{ru:'Обычное видео',en:'Normal video'}, energy:38, effort:1.15,cr:2, ds:{ru:'Баланс усилий и результата',en:'Balanced effort and result'}},
-  epic:   {nm:{ru:'Эпик-проект',en:'Epic project'},   energy:64, effort:1.7, cr:4, ds:{ru:'Дорого по силам, но мощно',en:'Costly in energy, but powerful'}},
+const SKILL_MAX=10;
+const VTYPES={
+  short:{nm:{ru:'Shorts',en:'Shorts'},em:'⚡',energy:12,effort:0.5,cr:1,ds:{ru:'Быстро, дёшево, охваты',en:'Fast, cheap, reach'}},
+  quick:{nm:{ru:'Быстрое',en:'Quick'},em:'🎞️',energy:22,effort:0.8,cr:1,ds:{ru:'Меньше сил — меньше отдачи',en:'Less effort, less payoff'}},
+  normal:{nm:{ru:'Обычное',en:'Normal'},em:'🎬',energy:38,effort:1.15,cr:2,ds:{ru:'Баланс усилий и результата',en:'Balanced'}},
+  epic:{nm:{ru:'Эпик',en:'Epic'},em:'🎇',energy:64,effort:1.7,cr:4,ds:{ru:'Дорого, но мощно',en:'Costly, but powerful'}},
 };
-const STAFF = {
-  editor:   {nm:{ru:'Монтажёр',en:'Editor'},          em:'✂️', base:1500, scale:2.2, ds:{ru:'−7% энергии на видео и +качество за уровень',en:'−7% video energy and +quality per level'}},
-  designer: {nm:{ru:'Дизайнер обложек',en:'Thumbnail designer'}, em:'🎨', base:1200, scale:2.2, ds:{ru:'+CTR (кликабельность) за уровень',en:'+CTR per level'}},
-  writer:   {nm:{ru:'Сценарист',en:'Scriptwriter'},   em:'📝', base:2000, scale:2.3, ds:{ru:'+шанс вируса и +качество',en:'+viral chance and +quality'}},
-  manager:  {nm:{ru:'Менеджер',en:'Manager'},         em:'💼', base:3000, scale:2.4, ds:{ru:'Пассивный доход каждый день',en:'Passive income every day'}},
-  moderator:{nm:{ru:'Модератор',en:'Moderator'},      em:'🛡️', base:1000, scale:2.1, ds:{ru:'Меньше хейта и защита репутации',en:'Less hate and reputation shield'}},
+const STAFF={
+  editor:{nm:{ru:'Монтажёр',en:'Editor'},em:'✂️',base:1500,scale:2.2,ds:{ru:'−7% энергии и +качество',en:'−7% energy & +quality'}},
+  designer:{nm:{ru:'Дизайнер',en:'Designer'},em:'🎨',base:1200,scale:2.2,ds:{ru:'+кликабельность',en:'+CTR'}},
+  writer:{nm:{ru:'Сценарист',en:'Writer'},em:'📝',base:2000,scale:2.3,ds:{ru:'+шанс вируса и качество',en:'+viral chance & quality'}},
+  manager:{nm:{ru:'Менеджер',en:'Manager'},em:'💼',base:3000,scale:2.4,ds:{ru:'Пассивный доход в день',en:'Daily passive income'}},
+  moderator:{nm:{ru:'Модератор',en:'Moderator'},em:'🛡️',base:1000,scale:2.1,ds:{ru:'Меньше хейта, щит репутации',en:'Less hate, rep shield'}},
 };
-const STAFF_MAX = 5;
+const STAFF_MAX=5;
+const MERCH_EM=['👕','🧥','🧢','☕','🖼️','🧸','🏷️','📱'];
+function merchList(){ const nm=t('merchNames'); return nm.map((n,i)=>({id:i,nm:n,em:MERCH_EM[i]||'🧢',cost:Math.round(2000*Math.pow(1.8,i)),income:0.006*(i+1)})); }
+const BRANDS=['NovaTech','GreenLeaf','PixelUp','FuelX','AquaPure','ByteWear','Lumen','Zenith','Forestry','TurboSnack'];
 
-const ACHS = [
-  {id:'first',  em:'🎬', nm:{ru:'Первое видео',en:'First video'}, ds:{ru:'Снять 1 видео',en:'Film 1 video'}},
-  {id:'s100',   em:'🌱', nm:{ru:'Первая сотня',en:'First hundred'}, ds:{ru:'100 подписчиков',en:'100 subscribers'}},
-  {id:'s1k',    em:'💵', nm:{ru:'Монетизация',en:'Monetized'}, ds:{ru:'1 000 подписчиков',en:'1,000 subscribers'}},
-  {id:'s10k',   em:'🚀', nm:{ru:'Разгон',en:'Lift-off'}, ds:{ru:'10 000 подписчиков',en:'10,000 subscribers'}},
-  {id:'silver', em:'🥈', nm:{ru:'Серебро',en:'Silver'}, ds:{ru:'100 000 подписчиков',en:'100,000 subscribers'}},
-  {id:'gold',   em:'🥇', nm:{ru:'Золото',en:'Gold'}, ds:{ru:'1 000 000 подписчиков',en:'1,000,000 subscribers'}},
-  {id:'diamond',em:'💎', nm:{ru:'Алмаз',en:'Diamond'}, ds:{ru:'10 000 000 подписчиков',en:'10,000,000 subscribers'}},
-  {id:'ruby',   em:'❤️', nm:{ru:'Рубин',en:'Ruby'}, ds:{ru:'100 000 000 подписчиков',en:'100,000,000 subscribers'}},
-  {id:'viral',  em:'🔥', nm:{ru:'Вирус',en:'Viral'}, ds:{ru:'Снять вирусное видео',en:'Make a viral video'}},
-  {id:'rich',   em:'🤑', nm:{ru:'Богач',en:'Rich'}, ds:{ru:'Накопить $100 000',en:'Save $100,000'}},
-  {id:'collab', em:'🤝', nm:{ru:'Коллаб',en:'Collab'}, ds:{ru:'Сделать коллаб',en:'Do a collab'}},
-  {id:'maxeq',  em:'🏆', nm:{ru:'Топ-студия',en:'Top studio'}, ds:{ru:'Прокачать всё железо',en:'Max all gear'}},
-  {id:'stream', em:'🔴', nm:{ru:'В эфире',en:'On air'}, ds:{ru:'Провести стрим',en:'Run a live stream'}},
-  {id:'team',   em:'👥', nm:{ru:'Своя команда',en:'A real team'}, ds:{ru:'Нанять сотрудника',en:'Hire a staff member'}},
-  {id:'no1',    em:'👑', nm:{ru:'Король ютуба',en:'King of YouTube'}, ds:{ru:'Стать №1 в рейтинге',en:'Reach #1 in ranking'}},
-  {id:'prestige',em:'♻️', nm:{ru:'Новый старт',en:'Fresh start'}, ds:{ru:'Сделать престиж',en:'Do a prestige'}},
-  {id:'quest5', em:'🎯', nm:{ru:'Целеустремлённый',en:'Goal-getter'}, ds:{ru:'Выполнить 5 квестов',en:'Complete 5 quests'}},
+const ACHS=[
+  {id:'first',em:'🎬',nm:{ru:'Первое видео',en:'First video'},ds:{ru:'Снять 1 видео',en:'Film 1 video'}},
+  {id:'s100',em:'🌱',nm:{ru:'Первая сотня',en:'First hundred'},ds:{ru:'100 подписчиков',en:'100 subs'}},
+  {id:'s1k',em:'💵',nm:{ru:'Монетизация',en:'Monetized'},ds:{ru:'1 000 подписчиков',en:'1,000 subs'}},
+  {id:'s10k',em:'🚀',nm:{ru:'Разгон',en:'Lift-off'},ds:{ru:'10 000 подписчиков',en:'10,000 subs'}},
+  {id:'silver',em:'🥈',nm:{ru:'Серебро',en:'Silver'},ds:{ru:'100 000 подписчиков',en:'100,000 subs'}},
+  {id:'gold',em:'🥇',nm:{ru:'Золото',en:'Gold'},ds:{ru:'1 000 000 подписчиков',en:'1,000,000 subs'}},
+  {id:'diamond',em:'💎',nm:{ru:'Алмаз',en:'Diamond'},ds:{ru:'10 000 000 подписчиков',en:'10,000,000 subs'}},
+  {id:'ruby',em:'❤️',nm:{ru:'Рубин',en:'Ruby'},ds:{ru:'100 000 000 подписчиков',en:'100,000,000 subs'}},
+  {id:'viral',em:'🔥',nm:{ru:'Вирус',en:'Viral'},ds:{ru:'Снять вирусное видео',en:'Make a viral video'}},
+  {id:'rich',em:'🤑',nm:{ru:'Богач',en:'Rich'},ds:{ru:'Накопить $100 000',en:'Save $100,000'}},
+  {id:'collab',em:'🤝',nm:{ru:'Коллаб',en:'Collab'},ds:{ru:'Сделать коллаб',en:'Do a collab'}},
+  {id:'maxeq',em:'🏆',nm:{ru:'Топ-студия',en:'Top studio'},ds:{ru:'Прокачать всё железо',en:'Max all gear'}},
+  {id:'stream',em:'🔴',nm:{ru:'В эфире',en:'On air'},ds:{ru:'Провести стрим',en:'Run a stream'}},
+  {id:'team',em:'👥',nm:{ru:'Команда',en:'A team'},ds:{ru:'Нанять сотрудника',en:'Hire staff'}},
+  {id:'no1',em:'👑',nm:{ru:'Король ютуба',en:'King of YouTube'},ds:{ru:'Стать №1',en:'Reach #1'}},
+  {id:'prestige',em:'♻️',nm:{ru:'Новый старт',en:'Fresh start'},ds:{ru:'Сделать престиж',en:'Do a prestige'}},
+  {id:'quest5',em:'🎯',nm:{ru:'Целеустремлённый',en:'Goal-getter'},ds:{ru:'5 квестов',en:'5 quests'}},
+  {id:'merch',em:'🧢',nm:{ru:'Свой бренд',en:'Own brand'},ds:{ru:'Выпустить мерч',en:'Launch merch'}},
+  {id:'sponsor',em:'💼',nm:{ru:'Контракт',en:'Contract'},ds:{ru:'Подписать спонсора',en:'Sign a sponsor'}},
+  {id:'lvl10',em:'⭐',nm:{ru:'10 уровень',en:'Level 10'},ds:{ru:'Достичь 10 уровня',en:'Reach level 10'}},
 ];
-
-const RIVAL_NAMES = ['PixelStorm','MrGreenTV','LunaVlogs','TechNova','ChefFuego','WildRoman','BeatKing','FitZone',
-  'NightOwl','GamerX','AquaMind','RetroWave','SkyHigh','UrbanFox','NeoTube','ViralVira','DarkForest','ProPlay'];
-
-const NEWS = {
-  ru:['Новый апдейт алгоритма перетасовал рекомендации.','Реклама подорожала — RPM растёт.','Зрители массово смотрят Shorts.',
-      'Бренды охотятся за блогерами в твоей нише.','Вирусный челлендж захватил платформу.','Аналитики предсказывают бум длинных видео.',
-      'Платформа тестирует новые способы монетизации.','Коллаборации сейчас в моде.'],
-  en:['A new algorithm update reshuffled recommendations.','Ad rates rose — RPM is climbing.','Viewers are binging Shorts.',
-      'Brands are hunting creators in your niche.','A viral challenge took over the platform.','Analysts predict a long-form boom.',
-      'The platform is testing new monetization.','Collaborations are trending right now.']
+const AVATARS=['🎬','🌲','🎮','🎵','🍳','💻','🐺','🔥','⚡','🚀','🐱','👑','🎨','📸','🦊','🌙'];
+const RANK_MIN=[0,1000,10000,100000,1000000,10000000,100000000];
+function rankOf(subs){ let i=0; for(let k=0;k<RANK_MIN.length;k++) if(subs>=RANK_MIN[k]) i=k; return (t('rankNames')||[])[i]||''; }
+const RIVAL_NAMES=['PixelStorm','MrGreenTV','LunaVlogs','TechNova','ChefFuego','WildRoman','BeatKing','FitZone','NightOwl','GamerX','AquaMind','RetroWave','SkyHigh','UrbanFox','NeoTube','ViralVira','DarkForest','ProPlay'];
+const COMMENT_NAMES=['alex_99','maria.k','proGamer','leshiy','sunflower','n1ck','kotya','denchik','fox_tv','vasya','glitch','moon_river','tom','bee','zed','arina'];
+const COMMENT_AV=['🙂','😎','🔥','😂','😮','👍','🤔','😍','🐱','🦊','🌸','💀','🤖','👀','🎧','🍕'];
+const COMMENTS={
+  pos:{ru:['Огонь видео! 🔥','Лучший канал 💚','Пересматриваю уже 3 раз','Ор, лайк сразу','Ты лучший!','Контент топ','Жду продолжения!'],en:['Fire video! 🔥','Best channel 💚','Watched it 3x','Instant like','You are the best!','Top content','Need part 2!']},
+  neg:{ru:['Раньше было лучше…','Звук тихий','Слишком длинно','Ну такое 😐','Первый раз не зашло'],en:['Used to be better…','Audio is quiet','Too long','Meh 😐','Didn\'t land for me']},
+  q:{ru:['А какая камера?','Сколько это заняло?','Сделай про …','Откуда музыка?','Где снимал?'],en:['What camera?','How long did it take?','Do one about …','Where\'s the music from?','Where did you film?']},
 };
+const NEWS={ru:['Апдейт алгоритма перетасовал рекомендации.','Реклама подорожала — RPM растёт.','Зрители массово смотрят Shorts.','Бренды охотятся за блогерами в твоей нише.','Вирусный челлендж захватил платформу.','Аналитики ждут бум длинных видео.','Платформа тестит новую монетизацию.','Коллаборации в моде.'],
+  en:['Algorithm update reshuffled recommendations.','Ad rates rose — RPM climbing.','Viewers are binging Shorts.','Brands hunt creators in your niche.','A viral challenge took over.','Analysts predict a long-form boom.','Platform tests new monetization.','Collabs are trending.']};
 
-const AVATARS = ['🎬','🌲','🎮','🎵','🍳','💻','🐺','🔥','⚡','🚀','🐱','👑','🎨','📸','🦊','🌙'];
-const RANK_MIN = [0, 1000, 10000, 100000, 1000000, 10000000, 100000000];
-function rankOf(subs){ let i=0; for(let k=0;k<RANK_MIN.length;k++){ if(subs>=RANK_MIN[k]) i=k; } return (t('rankNames')||[])[i] || ''; }
+/* ============================ УТИЛИТЫ ============================ */
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const rint=(a,b)=>Math.floor(rnd(a,b+1));
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function fmt(n){ n=Math.round(n);
+  if(Math.abs(n)>=1e12)return (n/1e12).toFixed(n%1e12?1:0)+'T';
+  if(Math.abs(n)>=1e9)return (n/1e9).toFixed(n%1e9?1:0)+'B';
+  if(Math.abs(n)>=1e6)return (n/1e6).toFixed(n%1e6?1:0)+'M';
+  if(Math.abs(n)>=1e3)return (n/1e3).toFixed(n%1e3?1:0)+'K';
+  return ''+n; }
+const money=n=>'$'+fmt(n);
+function levelFromXp(xp){ return 1+Math.floor(Math.sqrt(Math.max(0,xp)/40)); }
+function xpForLevel(l){ return 40*(l-1)*(l-1); }
+function maxEnergy(){ return 100 + S.equip.pc*10 + (S.level-1)*5; }
 
-/* ------------------------- Утилиты и звук ------------------------- */
-const $ = s => document.querySelector(s);
-const rnd = (a,b) => a + Math.random()*(b-a);
-const rint = (a,b) => Math.floor(rnd(a,b+1));
-const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
-const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-function fmt(n){
-  n = Math.round(n);
-  if(Math.abs(n) >= 1e12) return (n/1e12).toFixed(n%1e12?1:0)+'T';
-  if(Math.abs(n) >= 1e9) return (n/1e9).toFixed(n%1e9?1:0)+'B';
-  if(Math.abs(n) >= 1e6) return (n/1e6).toFixed(n%1e6?1:0)+'M';
-  if(Math.abs(n) >= 1e3) return (n/1e3).toFixed(n%1e3?1:0)+'K';
-  return ''+n;
-}
-const money = n => '$'+fmt(n);
-function maxEnergy(){ return 100 + S.equip.pc*10; }
-
+/* ---- звук ---- */
 let AC=null;
-function ac(){ if(S && S.muted) return null; try{ const K=window.AudioContext||window.webkitAudioContext; if(!K) return null; AC=AC||new K(); if(AC.state==='suspended')AC.resume(); return AC; }catch(e){ return null; } }
-function tone(freq,dur,type,vol,when){ const c=ac(); if(!c) return; const o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=freq; o.connect(g); g.connect(c.destination); const at=c.currentTime+(when||0); g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(vol||0.12,at+0.01); g.gain.exponentialRampToValueAtTime(0.0001,at+dur); o.start(at); o.stop(at+dur+0.03); }
-function sfx(name){
-  if(S && S.muted) return;
-  switch(name){
-    case 'click':    tone(420,0.06,'square',0.05); break;
-    case 'publish':  tone(523,0.10,'sine',0.11); tone(659,0.12,'sine',0.09,0.08); break;
-    case 'coin':     tone(880,0.07,'square',0.07); tone(1175,0.09,'square',0.06,0.06); break;
-    case 'viral':    [523,659,784,1047].forEach((f,i)=>tone(f,0.18,'sawtooth',0.11,i*0.09)); break;
-    case 'milestone':[659,784,988,1319].forEach((f,i)=>tone(f,0.25,'triangle',0.13,i*0.12)); break;
-    case 'level':    tone(600,0.10,'triangle',0.09); tone(900,0.12,'triangle',0.08,0.08); break;
-    case 'error':    tone(160,0.18,'sawtooth',0.08); break;
-    case 'stream':   tone(300,0.10,'sine',0.09); tone(450,0.12,'sine',0.08,0.09); break;
-  }
-}
+function ac(){ if(S&&S.muted) return null; try{ const K=window.AudioContext||window.webkitAudioContext; if(!K) return null; AC=AC||new K(); if(AC.state==='suspended')AC.resume(); return AC; }catch(e){ return null; } }
+function tone(f,d,ty,v,w){ const c=ac(); if(!c) return; const vol=(v||0.12)*((S&&S.volume!=null)?S.volume:0.7); if(vol<=0) return;
+  const o=c.createOscillator(),g=c.createGain(); o.type=ty||'sine'; o.frequency.value=f; o.connect(g); g.connect(c.destination);
+  const at=c.currentTime+(w||0); g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(vol,at+0.01); g.gain.exponentialRampToValueAtTime(0.0001,at+d); o.start(at); o.stop(at+d+0.03); }
+function sfx(n){ if(S&&(S.muted||S.volume===0)) return; switch(n){
+  case 'click':tone(420,0.06,'square',0.05);break;
+  case 'publish':tone(523,0.1,'sine',0.11);tone(659,0.12,'sine',0.09,0.08);break;
+  case 'coin':tone(880,0.07,'square',0.07);tone(1175,0.09,'square',0.06,0.06);break;
+  case 'viral':[523,659,784,1047].forEach((f,i)=>tone(f,0.18,'sawtooth',0.11,i*0.09));break;
+  case 'milestone':[659,784,988,1319].forEach((f,i)=>tone(f,0.25,'triangle',0.13,i*0.12));break;
+  case 'level':tone(600,0.1,'triangle',0.09);tone(900,0.12,'triangle',0.08,0.08);break;
+  case 'error':tone(160,0.18,'sawtooth',0.08);break;
+  case 'stream':tone(300,0.1,'sine',0.09);tone(450,0.12,'sine',0.08,0.09);break;
+}}
 
-/* ------------------------- Визуальные эффекты ------------------------- */
-let lastPointer = {x: (typeof innerWidth!=='undefined'?innerWidth/2:200), y:160};
-let confParts=[], confRAF=0;
-function confetti(power){
-  if(typeof requestAnimationFrame==='undefined') return;
-  const cv=$('#fx'); if(!cv||!cv.getContext) return;
+/* ---- эффекты ---- */
+let lastPointer={x:(typeof innerWidth!=='undefined'?innerWidth/2:200),y:160};
+let confParts=[],confRAF=0;
+function confetti(power){ if(typeof requestAnimationFrame==='undefined') return; const cv=$('#fx'); if(!cv||!cv.getContext) return;
   cv.style.display='block'; cv.width=innerWidth; cv.height=innerHeight; const ctx=cv.getContext('2d');
-  const cols=['#39d353','#f2c14e','#7ee3ff','#ff5c7a','#c98bff','#ffffff'];
-  const n=power||90;
-  for(let i=0;i<n;i++) confParts.push({x:innerWidth/2+rnd(-90,90), y:innerHeight*0.32,
-    vx:rnd(-6,6), vy:rnd(-13,-4), g:rnd(0.22,0.4), s:rnd(4,9), c:pick(cols), r:rnd(0,6.28), vr:rnd(-0.3,0.3), life:rnd(60,110)});
-  if(!confRAF){
-    const step=()=>{ ctx.clearRect(0,0,cv.width,cv.height);
-      confParts.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.life--;
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.globalAlpha=clamp(p.life/40,0,1);
-        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore(); });
-      confParts=confParts.filter(p=>p.life>0 && p.y<cv.height+20);
-      if(confParts.length){ confRAF=requestAnimationFrame(step); } else { confRAF=0; ctx.clearRect(0,0,cv.width,cv.height); cv.style.display='none'; } };
-    confRAF=requestAnimationFrame(step);
-  }
-}
-function floatNum(text, color){
-  if(typeof document==='undefined' || !document.body) return;
-  const el=document.createElement('div'); el.className='float-num'; el.textContent=text; el.style.color=color||'var(--accent)';
-  el.style.left=(lastPointer.x-10)+'px'; el.style.top=(lastPointer.y-16)+'px';
-  document.body.appendChild(el); setTimeout(()=>el.remove(),1150);
-}
-function animateStat(id, to, isMoney){
-  const el=$('#'+id); if(!el) return;
-  const parse=s=>{ if(!s) return 0; s=(''+s).replace(/[$,]/g,''); const m=parseFloat(s)||0;
-    if(/B/i.test(s))return m*1e9; if(/M/i.test(s))return m*1e6; if(/K/i.test(s))return m*1e3; if(/T/i.test(s))return m*1e12; return m; };
-  const from=parse(el.dataset.raw!==undefined?el.dataset.raw:el.textContent);
-  el.dataset.raw=to;
-  if(typeof requestAnimationFrame==='undefined' || from===to){ el.textContent=(isMoney?'$':'')+fmt(to); return; }
-  if(to>from){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
-  const t0=performance.now(), dur=450;
-  const tick=now=>{ const p=clamp((now-t0)/dur,0,1); const v=from+(to-from)*(1-Math.pow(1-p,3));
-    el.textContent=(isMoney?'$':'')+fmt(v); if(p<1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-}
+  const cols=['#39d353','#f2c14e','#7ee3ff','#ff5c7a','#c98bff','#5aa9ff','#fff'];
+  for(let i=0;i<(power||90);i++) confParts.push({x:innerWidth/2+rnd(-100,100),y:innerHeight*0.3,vx:rnd(-6,6),vy:rnd(-13,-4),g:rnd(0.22,0.4),s:rnd(4,9),c:pick(cols),r:rnd(0,6.28),vr:rnd(-0.3,0.3),life:rnd(60,110)});
+  if(!confRAF){ const step=()=>{ ctx.clearRect(0,0,cv.width,cv.height);
+    confParts.forEach(p=>{ p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.life--; ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=clamp(p.life/40,0,1);ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);ctx.restore(); });
+    confParts=confParts.filter(p=>p.life>0&&p.y<cv.height+20);
+    if(confParts.length) confRAF=requestAnimationFrame(step); else { confRAF=0; ctx.clearRect(0,0,cv.width,cv.height); cv.style.display='none'; } };
+    confRAF=requestAnimationFrame(step); } }
+function floatNum(txt,color){ if(typeof document==='undefined'||!document.body) return; const el=document.createElement('div'); el.className='float-num'; el.textContent=txt; el.style.color=color||'var(--accent)'; el.style.left=(lastPointer.x-10)+'px'; el.style.top=(lastPointer.y-16)+'px'; document.body.appendChild(el); setTimeout(()=>el.remove(),1150); }
+function animateStat(id,to,isMoney){ const el=$('#'+id); if(!el) return;
+  const parse=s=>{ if(!s) return 0; s=(''+s).replace(/[$,]/g,''); const m=parseFloat(s)||0; if(/T/i.test(s))return m*1e12; if(/B/i.test(s))return m*1e9; if(/M/i.test(s))return m*1e6; if(/K/i.test(s))return m*1e3; return m; };
+  const from=parse(el.dataset&&el.dataset.raw!==undefined?el.dataset.raw:el.textContent); if(el.dataset) el.dataset.raw=to;
+  if(typeof requestAnimationFrame==='undefined'||from===to){ el.textContent=(isMoney?'$':'')+fmt(to); return; }
+  const t0=performance.now(),dur=430; const tick=now=>{ const p=clamp((now-t0)/dur,0,1); el.textContent=(isMoney?'$':'')+fmt(from+(to-from)*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
+/* фон-частицы */
+let bgParts=[],bgRAF=0;
+function startBg(){ if(typeof requestAnimationFrame==='undefined') return; const cv=$('#bg'); if(!cv||!cv.getContext) return; const ctx=cv.getContext('2d');
+  const resize=()=>{ cv.width=innerWidth; cv.height=innerHeight; }; resize(); window.addEventListener('resize',resize);
+  bgParts=[]; for(let i=0;i<38;i++) bgParts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:rnd(1,3),vy:rnd(-0.25,-0.05),vx:rnd(-0.15,0.15),a:rnd(0.05,0.28)});
+  const step=()=>{ ctx.clearRect(0,0,cv.width,cv.height); const col=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#39d353';
+    bgParts.forEach(p=>{ p.y+=p.vy;p.x+=p.vx; if(p.y<-5){p.y=cv.height+5;p.x=Math.random()*cv.width;} ctx.globalAlpha=p.a; ctx.fillStyle=col; ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill(); });
+    ctx.globalAlpha=1; bgRAF=requestAnimationFrame(step); };
+  if(!bgRAF) bgRAF=requestAnimationFrame(step); }
 
-/* ------------------------------ Состояние ------------------------------ */
-const SAVE_KEY = 'tubetycoon_save_v2';
-let S = null;
-function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+/* ============================ СОСТОЯНИЕ ============================ */
+const SAVE_KEY='tubetycoon_save_v4';
+let S=null;
+function save(){ try{ localStorage.setItem(SAVE_KEY,JSON.stringify(S)); }catch(e){} }
 function load(){ try{ const r=localStorage.getItem(SAVE_KEY); if(!r) return null; const s=JSON.parse(r); if(s&&s.name&&s.niche) return s; }catch(e){} return null; }
-
-function makeRivals(){
-  const names = RIVAL_NAMES.slice().sort(()=>Math.random()-0.5).slice(0,7);
-  const nk = Object.keys(NICHES);
-  return names.map(n=>({name:n, subs:rint(40,600), niche:pick(nk), g:rnd(0.03,0.09)}));
-}
-function freshState(name, niche, keep){
-  const base = {
-    v:2, lang:LANG, name, niche, muted:false, avatar:'🎬',
-    subs:0, views:0, money:200, creative:0, rep:50,
-    day:1, energy:100,
+function makeRivals(){ const names=RIVAL_NAMES.slice().sort(()=>Math.random()-0.5).slice(0,7); const nk=Object.keys(NICHES);
+  return names.map(n=>({name:n,subs:rint(40,600),niche:pick(nk),g:rnd(0.03,0.09)})); }
+function freshState(name,niche,keep){
+  const base={ v:4, lang:LANG, name, niche, avatar:'🎬', theme:'nature', volume:0.7, muted:false,
+    subs:0, views:0, money:200, creative:0, rep:50, day:1, energy:100, xp:0, level:1,
     equip:{camera:0,mic:0,pc:0,light:0,soft:0,studio:0},
     skills:{editing:0,charisma:0,seo:0,thumb:0,writing:0},
     staff:{editor:0,designer:0,writer:0,manager:0,moderator:0},
+    merch:{}, sponsorActive:null, sponsorOffers:[], sponsorRefresh:0,
+    comments:[], topics:[], topicSel:-1,
     videos:[], log:[], events:[],
-    monetized:false, milestones:{}, achs:{},
-    trend:null, trendDays:0,
-    history:[0], collabDone:false,
-    rivals:makeRivals(), wasNo1:false,
-    quests:[], questsDone:0,
-    prestige:0, permaBonus:0,
-    stats:{videosMade:0, virals:0, strikes:0, bestViews:0, streams:0},
+    monetized:false, milestones:{}, achs:{}, trend:null, trendDays:0,
+    rivals:makeRivals(), wasNo1:false, quests:[], questsDone:0, prestige:0, permaBonus:0,
+    history:{subs:[0],views:[0],money:[0]}, collabDone:false,
+    stats:{videosMade:0,virals:0,strikes:0,bestViews:0,streams:0,replies:0},
   };
   if(keep){ base.achs=keep.achs||{}; base.prestige=keep.prestige||0; base.permaBonus=keep.permaBonus||0;
-            base.avatar=keep.avatar||'🎬'; base.money = 200 + Math.round(500*base.prestige); }
+    base.avatar=keep.avatar||'🎬'; base.theme=keep.theme||'nature'; base.volume=keep.volume; base.lang=keep.lang||LANG;
+    base.money=200+Math.round(500*base.prestige); }
   return base;
 }
-const pmult = ()=> 1 + (S.permaBonus||0);
+const pmult=()=>1+(S.permaBonus||0);
 
-/* ------------------------------ Лог / тосты ------------------------------ */
-function log(msg, cls){ S.log.unshift({d:S.day, m:msg, c:cls||'info'}); if(S.log.length>70) S.log.pop(); }
-function toast(msg, cls){ const t=document.createElement('div'); t.className='toast '+(cls||''); t.textContent=msg; $('#toasts').appendChild(t);
-  setTimeout(()=>{ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 2600); }
+/* ============================ ЛОГ / ТОСТ ============================ */
+function log(m,c){ S.log.unshift({d:S.day,m,c:c||'info'}); if(S.log.length>70) S.log.pop(); }
+function toast(m,c){ const el=document.createElement('div'); el.className='toast '+(c||''); el.textContent=m; $('#toasts').appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); },2600); }
+
+/* ============================ XP / УРОВЕНЬ ============================ */
+function addXp(n){ S.xp+=n; const nl=levelFromXp(S.xp); if(nl>S.level){ const gained=nl-S.level; S.level=nl; S.energy=maxEnergy();
+  log(t('levelUp')+' '+S.level+'!','viral'); toast(t('levelUp')+' '+S.level,'gold'); sfx('level'); confetti(70);
+  if(S.level>=10) grantAch('lvl10'); } }
 
 /* ============================ КВЕСТЫ ============================ */
-const QUEST_KINDS = ['subs','videos','viral','stream','skill','money'];
-function genQuest(){
-  const kind = pick(QUEST_KINDS);
-  let target, reward, base;
+const QK=['subs','videos','viral','stream','skill','money'];
+function genQuest(){ const kind=pick(QK); let target,reward;
   switch(kind){
-    case 'subs':   target = Math.max(100, Math.round(S.subs*1.5 + rint(50,300))); reward=Math.round(target*0.5)+200; base=S.subs; break;
-    case 'videos': target = S.stats.videosMade + rint(3,8); reward=rint(150,600); base=S.stats.videosMade; break;
-    case 'viral':  target = S.stats.virals + 1; reward=rint(500,1500); base=S.stats.virals; break;
-    case 'stream': target = S.stats.streams + rint(1,3); reward=rint(300,900); base=S.stats.streams; break;
-    case 'skill':  target = clamp(Math.max(...Object.values(S.skills))+2, 2, SKILL_MAX); reward=rint(300,800); base=0; break;
-    case 'money':  target = Math.round(S.money + rint(500,3000)); reward=Math.round(target*0.3); base=S.money; break;
-  }
-  return {kind, target, reward, done:false};
-}
-function questProgress(q){
-  switch(q.kind){
-    case 'subs':   return S.subs;
-    case 'videos': return S.stats.videosMade;
-    case 'viral':  return S.stats.virals;
-    case 'stream': return S.stats.streams;
-    case 'skill':  return Math.max(...Object.values(S.skills));
-    case 'money':  return S.money;
-  }
-  return 0;
-}
+    case 'subs':target=Math.max(100,Math.round(S.subs*1.5+rint(50,300)));reward=Math.round(target*0.5)+200;break;
+    case 'videos':target=S.stats.videosMade+rint(3,8);reward=rint(150,600);break;
+    case 'viral':target=S.stats.virals+1;reward=rint(500,1500);break;
+    case 'stream':target=S.stats.streams+rint(1,3);reward=rint(300,900);break;
+    case 'skill':target=clamp(Math.max(...Object.values(S.skills))+2,2,SKILL_MAX);reward=rint(300,800);break;
+    case 'money':target=Math.round(S.money+rint(500,3000));reward=Math.round(target*0.3);break;
+  } return {kind,target,reward,done:false}; }
+function questProgress(q){ switch(q.kind){ case 'subs':return S.subs; case 'videos':return S.stats.videosMade; case 'viral':return S.stats.virals; case 'stream':return S.stats.streams; case 'skill':return Math.max(...Object.values(S.skills)); case 'money':return S.money; } return 0; }
 function questLabel(q){ return tf('qk_'+q.kind,{n:fmt(q.target)}); }
 function ensureQuests(){ while(S.quests.length<3) S.quests.push(genQuest()); }
-function checkQuests(){
-  let changed=false;
-  S.quests.forEach((q,i)=>{
-    if(!q.done && questProgress(q)>=q.target){
-      q.done=true; S.money+=q.reward; S.questsDone++;
-      log(`🎯 ${LANG==='ru'?'Квест выполнен':'Quest done'}: ${questLabel(q)} (+${money(q.reward)})`,'good');
-      toast('🎯 '+(LANG==='ru'?'Квест выполнен!':'Quest done!'),'gold'); sfx('coin');
-      if(S.questsDone>=5) grantAch('quest5');
-      S.quests[i]=genQuest(); changed=true;
-    }
-  });
-  ensureQuests();
-  return changed;
-}
+function checkQuests(){ S.quests.forEach((q,i)=>{ if(!q.done&&questProgress(q)>=q.target){ q.done=true; S.money+=q.reward; S.questsDone++; addXp(15);
+  log('🎯 '+(LANG==='ru'?'Квест':'Quest')+': '+questLabel(q)+' (+'+money(q.reward)+')','good'); toast('🎯 '+(LANG==='ru'?'Квест выполнен!':'Quest done!'),'gold'); sfx('coin');
+  if(S.questsDone>=5) grantAch('quest5'); S.quests[i]=genQuest(); } }); ensureQuests(); }
+
+/* ============================ ТЕМЫ ВИДЕО ============================ */
+function genTopics(){ const N=NICHES[S.niche]; const titles=N.titles[LANG]||N.titles.ru; const tags=t('topicTags');
+  S.topics=[]; for(let i=0;i<3;i++) S.topics.push({title:pick(titles),tag:pick(tags),hot:+rnd(0.8,1.6).toFixed(2)}); S.topicSel=-1; }
+function forecastLabel(hot){ return hot>=1.3?t('fHot'):hot>=1.0?t('fMid'):t('fLow'); }
+
+/* ============================ КОММЕНТАРИИ ============================ */
+function genComments(q,viral){ const n=viral?rint(3,4):rint(1,3);
+  for(let i=0;i<n;i++){ let tone = q>6?(Math.random()<0.75?'pos':'q') : q<3?(Math.random()<0.6?'neg':'q') : pick(['pos','q','neg']);
+    S.comments.unshift({who:pick(COMMENT_NAMES),av:pick(COMMENT_AV),txt:pick(COMMENTS[tone][LANG]||COMMENTS[tone].ru),tone,replied:false}); }
+  if(S.comments.length>10) S.comments.length=10; }
+function replyComment(i){ const c=S.comments[i]; if(!c||c.replied) return; if(S.energy<4){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
+  S.energy-=4; c.replied=true; S.stats.replies++; const g=rint(3,25)+Math.round(S.subs*0.0008); S.subs+=g; S.rep=clamp(S.rep+0.5,0,100); addXp(2);
+  log('💬 '+t('commentReplyGain')+': +'+fmt(g),'good'); floatNum('+'+fmt(g)+' 👤','var(--accent)'); sfx('click'); checkMilestones(); checkQuests(); render(); save(); }
 
 /* ============================ ДВИЖОК: ВИДЕО ============================ */
 function avgEquip(){ const e=S.equip; return (e.camera+e.mic+e.pc+e.light+e.soft+e.studio*1.5)/7.5; }
+function merchIncomeRate(){ let r=0; for(const k in S.merch){ if(S.merch[k]) r+=merchList()[k].income; } return r; }
 function makeVideo(typeKey){
-  const T = VTYPES[typeKey];
-  const eCost = Math.round(T.energy * (1 - S.staff.editor*0.07));
-  if(S.energy < eCost){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
-  S.energy -= eCost;
-
+  const T=VTYPES[typeKey]; const eCost=Math.round(T.energy*(1-S.staff.editor*0.07));
+  if(S.energy<eCost){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
+  S.energy-=eCost;
+  if(!S.topics.length) genTopics();
+  const topic = S.topicSel>=0 ? S.topics[S.topicSel] : pick(S.topics);
   const N=NICHES[S.niche], sk=S.skills, eq=avgEquip();
-  let q = 1.4 + eq*0.62 + sk.editing*0.34 + sk.writing*0.22 + sk.charisma*0.12
-        + T.effort*1.8 + S.staff.editor*0.15 + S.staff.writer*0.1 + rnd(-1.4,1.6);
-  q = clamp(q, 0.4, 18);
-
-  const trendMatch = (S.trend===S.niche);
-  const trendBonus = trendMatch ? 1.85 : 1.0;
-  const seoF = (1 + sk.seo*0.16) * N.disc;
-  const ctr  = (1 + sk.thumb*0.13) * (1 + S.staff.designer*0.05);
-  const repF = 0.7 + S.rep/100;
-  const authority = 1 + Math.pow(S.subs, 0.5)/26;
-
-  let viralRoll=1, viral=false;
-  const r=Math.random();
-  const viralChance = 0.02 + sk.writing*0.004 + S.staff.writer*0.005 + (trendMatch?0.03:0);
-  if(r<viralChance){ viralRoll=rnd(9,42); viral=true; }
-  else if(r<0.18)  { viralRoll=rnd(1.6,3.2); }
-  else             { viralRoll=rnd(0.7,1.35); }
-
-  const discovery = Math.pow(q,1.85) * (13 + sk.seo*9) * seoF * ctr * trendBonus * viralRoll * repF * authority * pmult();
-  const subReach  = S.subs * clamp(0.20 + q*0.02, 0.12, 0.6);
-  let views = Math.max(Math.round(discovery + subReach), rint(5,40));
-
-  const saturation = clamp(1 - S.subs/2e9, 0.02, 1);
-  let appeal = clamp(q*0.004 * N.appeal * (1 + sk.charisma*0.07) * ctr, 0.002, 0.09);
-  let dSubs = Math.round(discovery * appeal * saturation);
-  if(q<3 && S.subs>50){ dSubs -= Math.round(S.subs*0.008*(3-q)); }
-  dSubs = Math.max(dSubs, -Math.round(S.subs*0.05));
-
-  const likes = Math.round(views*(0.018+q*0.004));
-  const adBonus = 1 + S.equip.soft*0.03;
-  let earned = S.monetized ? Math.round(views/1000*N.rpm*adBonus*pmult())
-                           : Math.round(views/1000*N.rpm*0.12);
+  let q=1.4+eq*0.62+sk.editing*0.34+sk.writing*0.22+sk.charisma*0.12+T.effort*1.8+S.staff.editor*0.15+S.staff.writer*0.1+rnd(-1.4,1.6);
+  q=clamp(q*(0.85+topic.hot*0.18),0.4,20);
+  const trendMatch=(S.trend===S.niche), trendBonus=trendMatch?1.85:1.0;
+  const seoF=(1+sk.seo*0.16)*N.disc, ctr=(1+sk.thumb*0.13)*(1+S.staff.designer*0.05), repF=0.7+S.rep/100;
+  const authority=1+Math.pow(S.subs,0.5)/26;
+  let viralRoll=1,viral=false; const r=Math.random();
+  const vc=0.02+sk.writing*0.004+S.staff.writer*0.005+(trendMatch?0.03:0)+(topic.hot>=1.3?0.02:0);
+  if(r<vc){ viralRoll=rnd(9,42); viral=true; } else if(r<0.18){ viralRoll=rnd(1.6,3.2); } else { viralRoll=rnd(0.7,1.35); }
+  const discovery=Math.pow(q,1.85)*(13+sk.seo*9)*seoF*ctr*trendBonus*viralRoll*repF*authority*pmult();
+  const subReach=S.subs*clamp(0.20+q*0.02,0.12,0.6);
+  let views=Math.max(Math.round(discovery+subReach),rint(5,40));
+  const sat=clamp(1-S.subs/2e9,0.02,1);
+  let appeal=clamp(q*0.004*N.appeal*(1+sk.charisma*0.07)*ctr,0.002,0.09);
+  let dSubs=Math.round(discovery*appeal*sat*(topic.hot>=1.3?1.1:1));
+  if(q<3&&S.subs>50) dSubs-=Math.round(S.subs*0.008*(3-q));
+  dSubs=Math.max(dSubs,-Math.round(S.subs*0.05));
+  const likes=Math.round(views*(0.018+q*0.004));
+  const adBonus=1+S.equip.soft*0.03;
+  let earned=S.monetized?Math.round(views/1000*N.rpm*adBonus*pmult()):Math.round(views/1000*N.rpm*0.12);
+  const merchSale=merchIncomeRate()>0?Math.round(views*merchIncomeRate()*rnd(0.4,1.0)):0;
+  earned+=merchSale;
 
   S.views+=views; S.subs=Math.max(0,S.subs+dSubs); S.money+=earned; S.creative+=T.cr;
-  S.rep=clamp(S.rep + (q>7?1:q<3?-2:0) + (viral?2:0), 0, 100);
-  S.stats.videosMade++; if(viral) S.stats.virals++; if(views>S.stats.bestViews) S.stats.bestViews=views;
-
-  const title = pick(N.titles[LANG]||N.titles.ru);
-  S.videos.unshift({title,niche:S.niche,type:typeKey,views,subs:dSubs,likes,money:earned,day:S.day,viral,q:+q.toFixed(1)});
+  S.rep=clamp(S.rep+(q>7?1:q<3?-2:0)+(viral?2:0),0,100);
+  S.stats.videosMade++; if(viral)S.stats.virals++; if(views>S.stats.bestViews)S.stats.bestViews=views;
+  addXp(8+(viral?12:0));
+  S.videos.unshift({title:topic.title,tag:topic.tag,niche:S.niche,type:typeKey,views,subs:dSubs,likes,money:earned,day:S.day,viral,q:+q.toFixed(1)});
   if(S.videos.length>60) S.videos.pop();
 
-  if(viral){ log(`🔥 ${LANG==='ru'?'ВИРУС':'VIRAL'}! «${title}» — ${fmt(views)} ${t('views').toLowerCase()}, +${fmt(dSubs)}!`,'viral');
-    toast(LANG==='ru'?'🔥 ВИДЕО ВЗОРВАЛОСЬ!':'🔥 IT WENT VIRAL!','gold'); sfx('viral'); grantAch('viral'); confetti(140); }
-  else { log(`«${title}» — ${fmt(views)} ${t('views').toLowerCase()}, ${dSubs>=0?'+':''}${fmt(dSubs)}, ${money(earned)}`, dSubs>=0?'good':'bad'); sfx('publish'); }
-  floatNum((dSubs>=0?'+':'')+fmt(dSubs)+' 👤', dSubs>=0?'var(--accent)':'var(--danger)');
+  if(viral){ log('🔥 '+(LANG==='ru'?'ВИРУС':'VIRAL')+'! «'+topic.title+'» — '+fmt(views)+', +'+fmt(dSubs)+'!','viral'); toast(LANG==='ru'?'🔥 ВЗОРВАЛОСЬ!':'🔥 VIRAL!','gold'); sfx('viral'); grantAch('viral'); confetti(140); }
+  else { log('«'+topic.title+'» — '+fmt(views)+', '+(dSubs>=0?'+':'')+fmt(dSubs)+', '+money(earned),dSubs>=0?'good':'bad'); sfx('publish'); }
+  floatNum((dSubs>=0?'+':'')+fmt(dSubs)+' 👤',dSubs>=0?'var(--accent)':'var(--danger)');
   if(earned>0) setTimeout(()=>floatNum('+'+money(earned),'var(--gold)'),120);
-
-  grantAch('first'); checkMilestones(); maybeEvent(views,q); checkQuests();
-  S.history.push(S.subs); if(S.history.length>140) S.history.shift();
+  genComments(q,viral); genTopics();
+  grantAch('first'); checkMilestones(); maybeEvent(views,q); checkQuests(); pushHist();
   render(); save();
 }
-
-function liveStream(){
-  if(S.subs<100){ toast(t('streamLocked'),'bad'); sfx('error'); return; }
-  if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
-  S.energy-=30;
-  const N=NICHES[S.niche];
-  const viewers = Math.round(S.subs*rnd(0.05,0.25)) + rint(20,200);
-  const superchat = Math.round(viewers*rnd(0.02,0.08)*(1+S.skills.charisma*0.1)) + rint(5,50);
-  const dSubs = Math.round(viewers*rnd(0.01,0.05));
-  S.views+=viewers; S.money+=superchat; S.subs+=dSubs; S.stats.streams++;
-  S.rep=clamp(S.rep+1,0,100);
-  log(`🔴 ${LANG==='ru'?'Стрим':'Stream'}: ${fmt(viewers)} ${LANG==='ru'?'зрителей':'viewers'}, +${fmt(dSubs)}, ${money(superchat)} ${LANG==='ru'?'донатов':'donations'}.`,'good');
-  toast('🔴 '+money(superchat)+' 💰','gold'); sfx('stream');
-  floatNum('+'+money(superchat),'var(--gold)'); setTimeout(()=>floatNum('+'+fmt(dSubs)+' 👤','var(--accent)'),120);
-  grantAch('stream'); checkMilestones(); checkQuests();
-  S.history.push(S.subs); if(S.history.length>140) S.history.shift();
-  render(); save();
-}
+function liveStream(){ if(S.subs<100){ toast(LANG==='ru'?'Нужно 100 подписчиков':'Need 100 subs','bad'); sfx('error'); return; }
+  if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; } S.energy-=30;
+  const N=NICHES[S.niche]; const viewers=Math.round(S.subs*rnd(0.05,0.25))+rint(20,200);
+  const superchat=Math.round(viewers*rnd(0.02,0.08)*(1+S.skills.charisma*0.1))+rint(5,50);
+  const dSubs=Math.round(viewers*rnd(0.01,0.05));
+  S.views+=viewers; S.money+=superchat; S.subs+=dSubs; S.stats.streams++; S.rep=clamp(S.rep+1,0,100); addXp(6);
+  log('🔴 '+(LANG==='ru'?'Стрим':'Stream')+': '+fmt(viewers)+', +'+fmt(dSubs)+', '+money(superchat),'good');
+  toast('🔴 '+money(superchat)+' 💰','gold'); sfx('stream'); floatNum('+'+money(superchat),'var(--gold)'); setTimeout(()=>floatNum('+'+fmt(dSubs)+' 👤','var(--accent)'),120);
+  genComments(6,false); grantAch('stream'); checkMilestones(); checkQuests(); pushHist(); render(); save(); }
+function pushHist(){ S.history.subs.push(S.subs); S.history.views.push(S.views); S.history.money.push(Math.round(S.money));
+  for(const k in S.history){ if(S.history[k].length>160) S.history[k].shift(); } }
 
 /* ============================ МИЛСТОУНЫ ============================ */
-const MILES=[
-  {n:100,id:'s100',bonus:50},{n:1000,id:'s1k',bonus:500,monet:true},{n:10000,id:'s10k',bonus:3000},
-  {n:100000,id:'silver',bonus:20000},{n:1000000,id:'gold',bonus:150000},
-  {n:10000000,id:'diamond',bonus:1500000},{n:100000000,id:'ruby',bonus:15000000},
-];
-const MILE_MSG={ru:{s100:'🌱 100 подписчиков!',s1k:'💵 1 000 подписчиков! Монетизация включена!',s10k:'🚀 10 000!',
-  silver:'🥈 Серебряная кнопка — 100K!',gold:'🥇 Золотая кнопка — 1 млн!',diamond:'💎 Алмазная — 10 млн!',ruby:'❤️ Рубиновая — 100 млн!'},
-  en:{s100:'🌱 100 subscribers!',s1k:'💵 1,000 subs! Monetization on!',s10k:'🚀 10,000!',
-  silver:'🥈 Silver button — 100K!',gold:'🥇 Gold button — 1M!',diamond:'💎 Diamond — 10M!',ruby:'❤️ Ruby — 100M!'}};
-function checkMilestones(){
-  for(const m of MILES){
-    if(S.subs>=m.n && !S.milestones[m.n]){
-      S.milestones[m.n]=true; if(m.monet) S.monetized=true; S.money+=m.bonus;
-      const msg=(MILE_MSG[LANG]||MILE_MSG.ru)[m.id];
-      log(`${msg} +${money(m.bonus)}`,'viral'); toast(msg,'gold'); sfx('milestone'); grantAch(m.id); confetti(160);
-    }
-  }
-  if(S.money>=100000) grantAch('rich');
-  if(Object.values(S.equip).every(v=>v>=EQUIP_MAX)) grantAch('maxeq');
-}
+const MILES=[{n:100,id:'s100',bonus:50},{n:1000,id:'s1k',bonus:500,monet:true},{n:10000,id:'s10k',bonus:3000},{n:100000,id:'silver',bonus:20000},{n:1000000,id:'gold',bonus:150000},{n:10000000,id:'diamond',bonus:1500000},{n:100000000,id:'ruby',bonus:15000000}];
+const MILE_MSG={ru:{s100:'🌱 100 подписчиков!',s1k:'💵 1 000! Монетизация включена!',s10k:'🚀 10 000!',silver:'🥈 Серебро — 100K!',gold:'🥇 Золото — 1 млн!',diamond:'💎 Алмаз — 10 млн!',ruby:'❤️ Рубин — 100 млн!'},
+  en:{s100:'🌱 100 subs!',s1k:'💵 1,000! Monetization on!',s10k:'🚀 10,000!',silver:'🥈 Silver — 100K!',gold:'🥇 Gold — 1M!',diamond:'💎 Diamond — 10M!',ruby:'❤️ Ruby — 100M!'}};
+function checkMilestones(){ for(const m of MILES){ if(S.subs>=m.n&&!S.milestones[m.n]){ S.milestones[m.n]=true; if(m.monet)S.monetized=true; S.money+=m.bonus;
+  const msg=(MILE_MSG[LANG]||MILE_MSG.ru)[m.id]; log(msg+' +'+money(m.bonus),'viral'); toast(msg,'gold'); sfx('milestone'); confetti(160); grantAch(m.id); addXp(40); } }
+  if(S.money>=100000) grantAch('rich'); if(Object.values(S.equip).every(v=>v>=EQUIP_MAX)) grantAch('maxeq'); }
 function grantAch(id){ if(S.achs[id]) return; S.achs[id]=true; const a=ACHS.find(x=>x.id===id);
   if(a){ toast('🏅 '+L(a.nm)); log('🏅 '+(LANG==='ru'?'Ачивка':'Achievement')+': «'+L(a.nm)+'».','info'); sfx('level'); } }
 
 /* ============================ СОБЫТИЯ ============================ */
 function pushEvent(id){ S.events.unshift({id,day:S.day,seen:false}); if(S.events.length>30) S.events.pop(); }
-function maybeEvent(views,q){
-  let chance=0.22 - S.staff.moderator*0.015;
-  if(Math.random()>chance) return;
-  const pool=EVENTS.filter(e=>!e.cond||e.cond(views,q));
-  if(!pool.length) return;
-  pushEvent(pick(pool).id); toast('📨 '+(LANG==='ru'?'Новое событие!':'New event!'));
-}
+function maybeEvent(views,q){ let ch=0.22-S.staff.moderator*0.015; if(Math.random()>ch) return;
+  const pool=EVENTS.filter(e=>!e.cond||e.cond(views,q)); if(!pool.length) return; pushEvent(pick(pool).id); toast('📨 '+(LANG==='ru'?'Новое событие!':'New event!')); }
 const EVENTS=[
-  {id:'strike', icon:'⚠️', title:{ru:'⚠️ Копирайт-страйк',en:'⚠️ Copyright strike'},
-   text:{ru:'На видео поступила жалоба на авторские права. Ролик под угрозой демонетизации.',en:'A copyright claim hit your video. It may be demonetized.'},
-   cond:v=>v>500,
-   choices:[
-     {t:{ru:'Оспорить (шанс)',en:'Dispute (chance)'}, run(){ if(Math.random()<0.6+S.staff.moderator*0.05){ log(LANG==='ru'?'Страйк снят!':'Strike removed!','good'); toast(LANG==='ru'?'Страйк снят ✅':'Strike removed ✅'); }
-       else { const loss=Math.round(S.money*0.15); S.money-=loss; S.rep=clamp(S.rep-4,0,100); S.stats.strikes++; log((LANG==='ru'?'Апелляция отклонена: −':'Appeal denied: −')+money(loss),'bad'); sfx('error'); } }},
-     {t:{ru:'Удалить видео',en:'Delete the video'}, run(){ S.rep=clamp(S.rep+1,0,100); log(LANG==='ru'?'Видео удалено.':'Video deleted.','info'); }},
-   ]},
-  {id:'brand', icon:'💼', title:{ru:'🤝 Рекламная интеграция',en:'🤝 Brand deal'},
-   text:{ru:'Бренд предлагает интеграцию. Деньги хорошие, но часть зрителей не любит рекламу.',en:'A brand offers an integration. Good money, but some viewers dislike ads.'},
-   cond:()=>S.subs>800,
-   choices:[
-     {t:{ru:'Согласиться',en:'Accept'}, run(){ const g=Math.round((200+S.subs*0.4)*pmult()); S.money+=g; S.rep=clamp(S.rep-3,0,100); log((LANG==='ru'?'Интеграция: +':'Deal: +')+money(g),'good'); sfx('coin'); }},
-     {t:{ru:'Отказаться',en:'Decline'}, run(){ S.rep=clamp(S.rep+2,0,100); log(LANG==='ru'?'Вы отказались — зрители оценили.':'You declined — viewers liked it.','info'); }},
-   ]},
-  {id:'collab', icon:'🎥', title:{ru:'🎥 Предложение коллаба',en:'🎥 Collab offer'},
-   text:{ru:'Другой блогер предлагает совместное видео. Его аудитория может прийти к вам.',en:'Another creator offers a collab. Their audience may come to you.'},
-   cond:()=>S.subs>300,
-   choices:[
-     {t:{ru:'Снять коллаб (−30 энергии)',en:'Do it (−30 energy)'}, run(){ if(S.energy<30){ log(LANG==='ru'?'Не хватило энергии.':'Not enough energy.','bad'); return; }
-       S.energy-=30; const g=Math.round(S.subs*rnd(0.08,0.2))+rint(50,400); S.subs+=g; S.views+=g*rnd(3,7); S.rep=clamp(S.rep+3,0,100);
-       S.collabDone=true; grantAch('collab'); log((LANG==='ru'?'Коллаб удался! +':'Collab worked! +')+fmt(g),'good'); toast('🤝 +'+fmt(g)); sfx('coin'); checkMilestones(); }},
-     {t:{ru:'Отклонить',en:'Reject'}, run(){ log(LANG==='ru'?'Вы отклонили коллаб.':'You rejected the collab.','info'); }},
-   ]},
-  {id:'hate', icon:'😡', title:{ru:'😡 Волна хейта',en:'😡 Wave of hate'},
-   text:{ru:'Под роликом набежали хейтеры. Комментарии токсичные.',en:'Haters flooded the comments. Toxic vibes.'},
-   choices:[
-     {t:{ru:'Ответить с юмором',en:'Reply with humor'}, run(){ if(Math.random()<0.7){ S.rep=clamp(S.rep+3,0,100); const g=rint(20,150); S.subs+=g; log((LANG==='ru'?'Остроумный ответ разошёлся: +':'Witty reply blew up: +')+fmt(g),'good'); } else { S.rep=clamp(S.rep-2,0,100); log(LANG==='ru'?'Шутка не зашла.':'Joke flopped.','bad'); } }},
-     {t:{ru:'Включить модерацию',en:'Enable moderation'}, run(){ S.rep=clamp(S.rep+1,0,100); log(LANG==='ru'?'Токсичные комментарии скрыты.':'Toxic comments hidden.','info'); }},
-     {t:{ru:'Игнорировать',en:'Ignore'}, run(){ S.rep=clamp(S.rep-3+S.staff.moderator,0,100); log(LANG==='ru'?'Хейт разросся.':'Hate spread.','bad'); }},
-   ]},
-  {id:'trendtip', icon:'📈', title:{ru:'📈 Инсайд по тренду',en:'📈 Trend tip'},
-   text:{ru:'Знакомый слил, какая тема скоро выстрелит. Подстроиться?',en:'A friend leaked the next big topic. Ride it?'},
-   choices:[
-     {t:{ru:'Поймать тренд',en:'Catch the trend'}, run(){ S.trend=S.niche; S.trendDays=3; log(LANG==='ru'?'Тренд в твоей нише на 3 дня! 🔥':'Trend in your niche for 3 days! 🔥','good'); toast('🔥'); }},
-     {t:{ru:'Пропустить',en:'Skip'}, run(){ log(LANG==='ru'?'Вы не стали гнаться за трендом.':'You skipped the trend.','info'); }},
-   ]},
-  {id:'gift', icon:'🎁', title:{ru:'🎁 Подарок фанатов',en:'🎁 Fan gift'},
-   text:{ru:'Зрители скинулись и прислали донат!',en:'Viewers chipped in and sent a donation!'},
-   choices:[{t:{ru:'Принять ❤️',en:'Accept ❤️'}, run(){ const g=Math.round(50+S.subs*0.05); S.money+=g; S.rep=clamp(S.rep+2,0,100); log((LANG==='ru'?'Фанаты задонатили ':'Fans donated ')+money(g)+' ❤️','good'); sfx('coin'); }}]},
-  {id:'sponsor', icon:'🕵️', title:{ru:'🕵️ Подозрительный спонсор',en:'🕵️ Shady sponsor'},
-   text:{ru:'Компания предлагает ОГРОМНЫЕ деньги за рекламу их продукта. Выглядит как скам.',en:'A company offers HUGE money to promote their product. Looks like a scam.'},
-   cond:()=>S.subs>5000,
-   choices:[
-     {t:{ru:'Взять деньги',en:'Take the money'}, run(){ const g=Math.round(S.subs*0.8); S.money+=g; log((LANG==='ru'?'Вы взяли ':'You took ')+money(g)+'…','good');
-        setTimeout(()=>{},0); pushEvent('scamfallout'); toast(LANG==='ru'?'Что-то будет…':'Something will follow…'); }},
-     {t:{ru:'Отказаться',en:'Refuse'}, run(){ S.rep=clamp(S.rep+4,0,100); log(LANG==='ru'?'Вы сохранили лицо. Репутация выросла.':'You kept integrity. Reputation up.','good'); }},
-   ]},
-  {id:'scamfallout', icon:'💥', title:{ru:'💥 Последствия скама',en:'💥 Scam fallout'},
-   text:{ru:'Продукт спонсора оказался мошенничеством. Зрители в ярости!',en:'The sponsor turned out to be a scam. Viewers are furious!'},
-   choices:[
-     {t:{ru:'Публично извиниться',en:'Public apology'}, run(){ S.rep=clamp(S.rep-8,0,100); const l=Math.round(S.subs*0.04); S.subs=Math.max(0,S.subs-l); log((LANG==='ru'?'Извинения. Ушло ':'Apology. Lost ')+fmt(l),'bad'); }},
-     {t:{ru:'Сделать вид, что ничего не было',en:'Pretend nothing happened'}, run(){ S.rep=clamp(S.rep-15,0,100); const l=Math.round(S.subs*0.09); S.subs=Math.max(0,S.subs-l); log((LANG==='ru'?'Стало только хуже. Ушло ':'Even worse. Lost ')+fmt(l),'bad'); sfx('error'); }},
-   ]},
-  {id:'burnout', icon:'😮‍💨', title:{ru:'😮‍💨 Выгорание',en:'😮‍💨 Burnout'},
-   text:{ru:'Вы устали от контента. Что делать?',en:'You are tired of making content. What now?'},
-   cond:()=>S.stats.videosMade>10,
-   choices:[
-     {t:{ru:'Выходной (+энергия, −день)',en:'Day off (+energy, −day)'}, run(){ S.energy=maxEnergy(); S.day++; log(LANG==='ru'?'День отдыха.':'A rest day.','info'); }},
-     {t:{ru:'Через силу',en:'Push through'}, run(){ S.rep=clamp(S.rep-2,0,100); log(LANG==='ru'?'Работа через силу. Риск качества.':'Pushed through. Quality at risk.','bad'); }},
-   ]},
+  {id:'strike',title:{ru:'⚠️ Копирайт-страйк',en:'⚠️ Copyright strike'},text:{ru:'Жалоба на авторские права. Ролик под угрозой демонетизации.',en:'A copyright claim. The video may be demonetized.'},cond:v=>v>500,
+   choices:[{t:{ru:'Оспорить (шанс)',en:'Dispute (chance)'},run(){ if(Math.random()<0.6+S.staff.moderator*0.05){ log(LANG==='ru'?'Страйк снят!':'Strike removed!','good'); toast('✅'); } else { const l=Math.round(S.money*0.15); S.money-=l; S.rep=clamp(S.rep-4,0,100); S.stats.strikes++; log((LANG==='ru'?'Отклонено: −':'Denied: −')+money(l),'bad'); sfx('error'); } }},
+     {t:{ru:'Удалить видео',en:'Delete video'},run(){ S.rep=clamp(S.rep+1,0,100); log(LANG==='ru'?'Видео удалено.':'Deleted.','info'); }}]},
+  {id:'brand',title:{ru:'🤝 Интеграция',en:'🤝 Brand deal'},text:{ru:'Бренд предлагает интеграцию. Деньги хорошие, но реклама злит часть зрителей.',en:'A brand offers an integration. Good money, but ads annoy some viewers.'},cond:()=>S.subs>800,
+   choices:[{t:{ru:'Согласиться',en:'Accept'},run(){ const g=Math.round((200+S.subs*0.4)*pmult()); S.money+=g; S.rep=clamp(S.rep-3,0,100); log((LANG==='ru'?'+':'+')+money(g),'good'); sfx('coin'); }},
+     {t:{ru:'Отказаться',en:'Decline'},run(){ S.rep=clamp(S.rep+2,0,100); log(LANG==='ru'?'Зрители оценили.':'Viewers liked it.','info'); }}]},
+  {id:'collab',title:{ru:'🎥 Коллаб',en:'🎥 Collab offer'},text:{ru:'Блогер предлагает совместное видео.',en:'A creator offers a collab.'},cond:()=>S.subs>300,
+   choices:[{t:{ru:'Снять (−30⚡)',en:'Do it (−30⚡)'},run(){ if(S.energy<30){ log(LANG==='ru'?'Мало энергии.':'Low energy.','bad'); return; } S.energy-=30; const g=Math.round(S.subs*rnd(0.08,0.2))+rint(50,400); S.subs+=g; S.views+=g*rnd(3,7); S.rep=clamp(S.rep+3,0,100); S.collabDone=true; grantAch('collab'); log((LANG==='ru'?'Коллаб! +':'Collab! +')+fmt(g),'good'); toast('🤝 +'+fmt(g)); sfx('coin'); checkMilestones(); }},
+     {t:{ru:'Отклонить',en:'Reject'},run(){ log(LANG==='ru'?'Отклонено.':'Rejected.','info'); }}]},
+  {id:'hate',title:{ru:'😡 Волна хейта',en:'😡 Wave of hate'},text:{ru:'Набежали хейтеры.',en:'Haters flooded in.'},
+   choices:[{t:{ru:'С юмором',en:'With humor'},run(){ if(Math.random()<0.7){ S.rep=clamp(S.rep+3,0,100); const g=rint(20,150); S.subs+=g; log((LANG==='ru'?'Ответ зашёл: +':'Reply landed: +')+fmt(g),'good'); } else { S.rep=clamp(S.rep-2,0,100); log(LANG==='ru'?'Не зашло.':'Flopped.','bad'); } }},
+     {t:{ru:'Модерация',en:'Moderate'},run(){ S.rep=clamp(S.rep+1,0,100); log(LANG==='ru'?'Скрыто.':'Hidden.','info'); }},
+     {t:{ru:'Игнор',en:'Ignore'},run(){ S.rep=clamp(S.rep-3+S.staff.moderator,0,100); log(LANG==='ru'?'Хейт разросся.':'Hate spread.','bad'); }}]},
+  {id:'gift',title:{ru:'🎁 Подарок фанатов',en:'🎁 Fan gift'},text:{ru:'Зрители прислали донат!',en:'Viewers sent a donation!'},
+   choices:[{t:{ru:'Принять ❤️',en:'Accept ❤️'},run(){ const g=Math.round(50+S.subs*0.05); S.money+=g; S.rep=clamp(S.rep+2,0,100); log((LANG==='ru'?'Донат ':'Donation ')+money(g)+' ❤️','good'); sfx('coin'); }}]},
+  {id:'sponsor',title:{ru:'🕵️ Скам-спонсор',en:'🕵️ Shady sponsor'},text:{ru:'ОГРОМНЫЕ деньги за рекламу продукта. Пахнет скамом.',en:'HUGE money to promote a product. Smells like a scam.'},cond:()=>S.subs>5000,
+   choices:[{t:{ru:'Взять деньги',en:'Take money'},run(){ const g=Math.round(S.subs*0.8); S.money+=g; log((LANG==='ru'?'Взял ':'Took ')+money(g)+'…','good'); pushEvent('scam2'); toast(LANG==='ru'?'Что-то будет…':'Something\'s coming…'); }},
+     {t:{ru:'Отказаться',en:'Refuse'},run(){ S.rep=clamp(S.rep+4,0,100); log(LANG==='ru'?'Репутация выросла.':'Reputation up.','good'); }}]},
+  {id:'scam2',title:{ru:'💥 Последствия',en:'💥 Fallout'},text:{ru:'Продукт оказался мошенничеством. Зрители в ярости!',en:'The product was a scam. Viewers are furious!'},
+   choices:[{t:{ru:'Извиниться',en:'Apologize'},run(){ S.rep=clamp(S.rep-8,0,100); const l=Math.round(S.subs*0.04); S.subs=Math.max(0,S.subs-l); log((LANG==='ru'?'Ушло ':'Lost ')+fmt(l),'bad'); }},
+     {t:{ru:'Молчать',en:'Stay silent'},run(){ S.rep=clamp(S.rep-15,0,100); const l=Math.round(S.subs*0.09); S.subs=Math.max(0,S.subs-l); log((LANG==='ru'?'Хуже. Ушло ':'Worse. Lost ')+fmt(l),'bad'); sfx('error'); }}]},
+  {id:'burnout',title:{ru:'😮‍💨 Выгорание',en:'😮‍💨 Burnout'},text:{ru:'Вы устали.',en:'You are tired.'},cond:()=>S.stats.videosMade>10,
+   choices:[{t:{ru:'Выходной (+⚡,−день)',en:'Day off (+⚡,−day)'},run(){ S.energy=maxEnergy(); S.day++; log(LANG==='ru'?'Отдых.':'Rest.','info'); }},
+     {t:{ru:'Через силу',en:'Push through'},run(){ S.rep=clamp(S.rep-2,0,100); log(LANG==='ru'?'Риск качества.':'Quality at risk.','bad'); }}]},
 ];
-function resolveEvent(idx,ci){ const ev=S.events[idx]; if(!ev||ev.seen) return; const def=EVENTS.find(e=>e.id===ev.id);
-  def.choices[ci].run(); ev.seen=true; checkMilestones(); checkQuests(); render(); save(); }
+function resolveEvent(idx,ci){ const ev=S.events[idx]; if(!ev||ev.seen) return; const def=EVENTS.find(e=>e.id===ev.id); def.choices[ci].run(); ev.seen=true; checkMilestones(); checkQuests(); render(); save(); }
 
 /* ============================ ДЕЙСТВИЯ ============================ */
 function equipCost(k){ const e=EQUIP[k]; return Math.round(e.base*Math.pow(e.scale,S.equip[k])); }
-function buyEquip(k){ if(S.equip[k]>=EQUIP_MAX){ toast(t('maxed')); return; } const c=equipCost(k);
-  if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } S.money-=c; S.equip[k]++;
-  log((LANG==='ru'?'Апгрейд: ':'Upgrade: ')+L(EQUIP[k].nm)+' → '+t('lvl')+S.equip[k],'good'); toast('⬆️ '+L(EQUIP[k].nm)); sfx('coin'); checkMilestones(); render(); save(); }
+function buyEquip(k){ if(S.equip[k]>=EQUIP_MAX){ toast(t('maxed')); return; } const c=equipCost(k); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; }
+  S.money-=c; S.equip[k]++; addXp(3); log((LANG==='ru'?'Апгрейд: ':'Upgrade: ')+L(EQUIP[k].nm)+' → '+t('lvl')+S.equip[k],'good'); toast('⬆️ '+L(EQUIP[k].nm)); sfx('coin'); checkMilestones(); render(); save(); }
 function skillCost(k){ return Math.round(60*Math.pow(1.7,S.skills[k])); }
-function trainSkill(k){ if(S.skills[k]>=SKILL_MAX){ toast(t('maxed')); return; } const c=skillCost(k);
-  if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } if(S.energy<20){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
-  S.money-=c; S.energy-=20; S.skills[k]++; log((LANG==='ru'?'Навык: ':'Skill: ')+L(SKILLS[k].nm)+' → '+t('lvl')+S.skills[k],'good'); toast('📈 '+L(SKILLS[k].nm)); sfx('level'); checkQuests(); render(); save(); }
+function trainSkill(k){ if(S.skills[k]>=SKILL_MAX){ toast(t('maxed')); return; } const c=skillCost(k); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } if(S.energy<20){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
+  S.money-=c; S.energy-=20; S.skills[k]++; addXp(5); log((LANG==='ru'?'Навык: ':'Skill: ')+L(SKILLS[k].nm)+' → '+t('lvl')+S.skills[k],'good'); toast('📈 '+L(SKILLS[k].nm)); sfx('level'); checkQuests(); render(); save(); }
 function staffCost(k){ const s=STAFF[k]; return Math.round(s.base*Math.pow(s.scale,S.staff[k])); }
-function hireStaff(k){ if(S.staff[k]>=STAFF_MAX){ toast(t('maxed')); return; } const c=staffCost(k);
-  if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } S.money-=c; S.staff[k]++;
-  log((LANG==='ru'?'Нанят: ':'Hired: ')+L(STAFF[k].nm)+' → '+t('lvl')+S.staff[k],'good'); toast('👥 '+L(STAFF[k].nm)); sfx('coin'); grantAch('team'); render(); save(); }
-
-function growRivals(){
-  // сублинейный рост: конкуренты сильны, но не улетают в бесконечную экспоненту
-  S.rivals.forEach(r=>{
-    const viral = Math.random()<0.04 ? rnd(1.2,1.8) : 1;
-    const grow = Math.pow(Math.max(r.subs,1),0.72) * r.g * 22 * rnd(0.6,1.4) * viral + rint(10,140);
-    r.subs = Math.round(r.subs + grow);
-  });
-}
-function checkNo1(){ const top=Math.max(...S.rivals.map(r=>r.subs)); if(S.subs>top && S.subs>0){ if(!S.wasNo1){ S.wasNo1=true; grantAch('no1'); toast('👑 #1!','gold'); log(LANG==='ru'?'👑 Ты №1 в рейтинге!':'👑 You are #1!','viral'); confetti(160); } } }
-function collabRival(name){
-  const r=S.rivals.find(x=>x.name===name); if(!r) return;
-  if(r.cd && S.day<r.cd){ toast(t('collabCooldown'),'bad'); sfx('error'); return; }
-  if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
-  S.energy-=30; r.cd=S.day+3;
-  const g=Math.round(Math.min(r.subs*rnd(0.02,0.06), S.subs*2+5000))+rint(30,300);
-  const v=g*rint(3,7); S.subs+=g; S.views+=v; S.rep=clamp(S.rep+2,0,100); S.collabDone=true;
-  grantAch('collab'); log('🤝 '+(LANG==='ru'?'Коллаб с ':'Collab with ')+r.name+': +'+fmt(g),'good');
-  toast('🤝 +'+fmt(g),'gold'); sfx('coin'); floatNum('+'+fmt(g)+' 👤','var(--accent)');
-  checkMilestones(); checkQuests(); S.history.push(S.subs); if(S.history.length>140)S.history.shift(); render(); save();
-}
-
-function nextDay(){
-  S.day++; S.energy=maxEnergy();
+function hireStaff(k){ if(S.staff[k]>=STAFF_MAX){ toast(t('maxed')); return; } const c=staffCost(k); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; }
+  S.money-=c; S.staff[k]++; addXp(6); log((LANG==='ru'?'Нанят: ':'Hired: ')+L(STAFF[k].nm)+' → '+t('lvl')+S.staff[k],'good'); toast('👥 '+L(STAFF[k].nm)); sfx('coin'); grantAch('team'); render(); save(); }
+function buyMerch(id){ if(S.subs<5000){ toast(t('merchLocked'),'bad'); return; } if(S.merch[id]){ toast(t('own')); return; } const m=merchList()[id]; if(S.money<m.cost){ toast(t('lowMoney'),'bad'); sfx('error'); return; }
+  S.money-=m.cost; S.merch[id]=1; addXp(8); grantAch('merch'); log('🧢 '+(LANG==='ru'?'Выпущен мерч: ':'Merch drop: ')+m.nm,'good'); toast('🧢 '+m.nm); sfx('coin'); render(); save(); }
+function genSponsors(){ S.sponsorOffers=[]; const n=rint(2,3); for(let i=0;i<n;i++){ const days=rint(4,9); const daily=Math.round((S.subs*rnd(0.02,0.06)+50)*pmult()); S.sponsorOffers.push({brand:pick(BRANDS),daily,days,repCost:+rnd(0.3,1.2).toFixed(1),sign:Math.round(daily*rnd(0.5,1.5))}); } S.sponsorRefresh=S.day+rint(4,7); }
+function signSponsor(i){ const o=S.sponsorOffers[i]; if(!o) return; S.sponsorActive={brand:o.brand,daily:o.daily,left:o.days,repCost:o.repCost}; S.money+=o.sign; addXp(6); grantAch('sponsor');
+  log('💼 '+(LANG==='ru'?'Контракт с ':'Contract with ')+o.brand+': '+money(o.daily)+'/'+t('day').toLowerCase()+' ×'+o.days+(o.sign>0?(' (+'+money(o.sign)+')'):''),'good'); toast('💼 '+o.brand,'gold'); sfx('coin'); S.sponsorOffers.splice(i,1); render(); save(); }
+function growRivals(){ S.rivals.forEach(r=>{ const viral=Math.random()<0.04?rnd(1.2,1.8):1; const grow=Math.pow(Math.max(r.subs,1),0.72)*r.g*22*rnd(0.6,1.4)*viral+rint(10,140); r.subs=Math.round(r.subs+grow); }); }
+function checkNo1(){ const top=Math.max(...S.rivals.map(r=>r.subs)); if(S.subs>top&&S.subs>0&&!S.wasNo1){ S.wasNo1=true; grantAch('no1'); toast('👑 #1!','gold'); log(LANG==='ru'?'👑 Ты №1!':'👑 You are #1!','viral'); confetti(160); } }
+function collabRival(name){ const r=S.rivals.find(x=>x.name===name); if(!r) return; if(r.cd&&S.day<r.cd){ toast(t('collabCooldown'),'bad'); sfx('error'); return; } if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
+  S.energy-=30; r.cd=S.day+3; const g=Math.round(Math.min(r.subs*rnd(0.02,0.06),S.subs*2+5000))+rint(30,300); S.subs+=g; S.views+=g*rint(3,7); S.rep=clamp(S.rep+2,0,100); S.collabDone=true; addXp(6); grantAch('collab');
+  log('🤝 '+(LANG==='ru'?'Коллаб с ':'Collab with ')+r.name+': +'+fmt(g),'good'); toast('🤝 +'+fmt(g),'gold'); sfx('coin'); floatNum('+'+fmt(g)+' 👤','var(--accent)'); checkMilestones(); checkQuests(); pushHist(); render(); save(); }
+function nextDay(){ S.day++; S.energy=maxEnergy();
   const drift=Math.round(S.subs*((S.rep-50)/100)*0.004); if(drift!==0) S.subs=Math.max(0,S.subs+drift);
-  if(S.staff.manager>0){ const inc=Math.round(S.subs*0.02*S.staff.manager*(S.monetized?1:0.2)*pmult()); if(inc>0){ S.money+=inc; log('💼 '+(LANG==='ru'?'Менеджер принёс ':'Manager brought ')+money(inc),'good'); } }
+  if(S.staff.manager>0){ const inc=Math.round(S.subs*0.02*S.staff.manager*(S.monetized?1:0.2)*pmult()); if(inc>0){ S.money+=inc; log('💼 '+(LANG==='ru'?'Менеджер: +':'Manager: +')+money(inc),'good'); } }
+  const mr=merchIncomeRate(); if(mr>0){ const inc=Math.round(S.subs*mr*rnd(0.8,1.2)); if(inc>0){ S.money+=inc; log('🧢 '+(LANG==='ru'?'Мерч: +':'Merch: +')+money(inc),'good'); } }
+  if(S.sponsorActive){ S.money+=S.sponsorActive.daily; S.rep=clamp(S.rep-S.sponsorActive.repCost,0,100); S.sponsorActive.left--; log('💼 '+S.sponsorActive.brand+': +'+money(S.sponsorActive.daily),'good');
+    if(S.sponsorActive.left<=0){ log((LANG==='ru'?'Контракт с ':'Contract with ')+S.sponsorActive.brand+(LANG==='ru'?' завершён.':' ended.'),'info'); S.sponsorActive=null; } }
+  if(S.day>=S.sponsorRefresh) genSponsors();
   if(S.trendDays>0){ S.trendDays--; if(S.trendDays===0){ S.trend=null; log(LANG==='ru'?'Тренд угас.':'Trend faded.','info'); } }
-  else if(Math.random()<0.35){ S.trend=pick(Object.keys(NICHES)); S.trendDays=rint(2,4);
-    log('📈 '+(LANG==='ru'?'Новый тренд: ':'New trend: ')+NICHES[S.trend].em+' '+L(NICHES[S.trend].nm)+(S.trend===S.niche?(LANG==='ru'?' — твоя ниша!':' — your niche!'):''),'info'); }
-  growRivals(); checkNo1(); checkQuests();
-  log('— '+t('day')+' '+S.day+'.','info');
-  S.history.push(S.subs); if(S.history.length>140) S.history.shift();
-  render(); save();
-}
+  else if(Math.random()<0.35){ S.trend=pick(Object.keys(NICHES)); S.trendDays=rint(2,4); log('📈 '+(LANG==='ru'?'Тренд: ':'Trend: ')+NICHES[S.trend].em+' '+L(NICHES[S.trend].nm)+(S.trend===S.niche?(LANG==='ru'?' — твоя ниша!':' — yours!'):''),'info'); }
+  growRivals(); checkNo1(); checkQuests(); addXp(2); log('— '+t('day')+' '+S.day+'.','info'); pushHist(); render(); save(); }
 function promoteCost(){ return Math.round(40+S.subs*0.25); }
-function promote(){ const c=promoteCost(); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; }
-  S.money-=c; const g=rint(10,60)+Math.round(S.subs*rnd(0.005,0.02))+S.skills.seo*8; const v=g*rint(2,6);
-  S.subs+=g; S.views+=v; log('📣 '+(LANG==='ru'?'Реклама: +':'Promo: +')+fmt(g)+', +'+fmt(v),'good'); toast('📣 +'+fmt(g)); sfx('coin'); checkMilestones(); checkQuests(); render(); save(); }
-
+function promote(){ const c=promoteCost(); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } S.money-=c;
+  const g=rint(10,60)+Math.round(S.subs*rnd(0.005,0.02))+S.skills.seo*8, v=g*rint(2,6); S.subs+=g; S.views+=v;
+  log('📣 +'+fmt(g)+', +'+fmt(v),'good'); toast('📣 +'+fmt(g)); sfx('coin'); checkMilestones(); checkQuests(); render(); save(); }
 function canPrestige(){ return S.subs>=1e6; }
-function doPrestige(){ if(!canPrestige()) return; const keep={achs:S.achs, prestige:S.prestige+1, permaBonus:(S.permaBonus||0)+0.15};
-  const nm=S.name, ni=S.niche; S=freshState(nm,ni,keep); grantAch('prestige');
-  log('♻️ '+(LANG==='ru'?'Новый канал! Постоянный бонус +':'New channel! Permanent bonus +')+Math.round(S.permaBonus*100)+'%','viral'); toast('♻️ +'+Math.round(S.permaBonus*100)+'%','purple'); sfx('milestone');
-  ensureQuests(); render(); save(); }
+function doPrestige(){ if(!canPrestige()) return; const keep={achs:S.achs,prestige:S.prestige+1,permaBonus:(S.permaBonus||0)+0.15,avatar:S.avatar,theme:S.theme,volume:S.volume,lang:S.lang};
+  const nm=S.name,ni=S.niche; S=freshState(nm,ni,keep); grantAch('prestige'); ensureQuests(); genTopics(); genSponsors();
+  log('♻️ '+(LANG==='ru'?'Новый канал! +':'New channel! +')+Math.round(S.permaBonus*100)+'%','viral'); toast('♻️ +'+Math.round(S.permaBonus*100)+'%','purple'); sfx('milestone'); confetti(160); render(); save(); }
 
 /* ============================ РЕНДЕР ============================ */
-let activeTab='studio';
-const TABS=[['studio','t_studio'],['shop','t_shop'],['skills','t_skills'],['team','t_team'],
-  ['videos','t_videos'],['quests','t_quests'],['events','t_events'],['rivals','t_rivals'],['channel','t_channel']];
-function buildTabs(){ const nav=$('#tabs'); nav.innerHTML=TABS.map(([id,k])=>`<button data-tab="${id}">${t(k)}${id==='events'?'<span class="badge hidden" id="evBadge"></span>':''}</button>`).join('');
-  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{ sfx('click'); activeTab=b.dataset.tab; renderTab(); }); }
-
-function applyStatic(){
-  document.documentElement.lang=LANG;
-  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.getAttribute('data-i18n')));
-  document.querySelectorAll('[data-ph]').forEach(el=>el.placeholder=t(el.getAttribute('data-ph')));
+const TABS=[
+  {id:'dash',ic:'🏠',k:'t_dash'},{id:'studio',ic:'🎬',k:'t_studio'},{id:'shop',ic:'🛒',k:'t_shop'},
+  {id:'skills',ic:'📈',k:'t_skills'},{id:'team',ic:'👥',k:'t_team'},
+  {id:'merch',ic:'🧢',k:'t_merch',lock:()=>S.subs<5000,lockMsg:'merchLocked'},
+  {id:'deals',ic:'💼',k:'t_deals',lock:()=>S.subs<2000,lockMsg:'dealsLocked'},
+  {id:'videos',ic:'📼',k:'t_videos'},{id:'quests',ic:'🎯',k:'t_quests'},
+  {id:'events',ic:'📨',k:'t_events',badge:true},{id:'rivals',ic:'🏆',k:'t_rivals'},{id:'channel',ic:'📊',k:'t_channel'},
+];
+let activeTab='dash', dashMetric='subs';
+function unseenEvents(){ return S.events.filter(e=>!e.seen).length; }
+function buildNav(){
+  const side=$('#navList'), bot=$('#bottomnav');
+  const html=TABS.map(t2=>{ const locked=t2.lock&&t2.lock(); const badge=t2.badge&&unseenEvents()>0?`<span class="badge">${unseenEvents()}</span>`:''; const lock=locked?'<span class="lock">🔒</span>':'';
+    return {side:`<div class="navitem" data-tab="${t2.id}"><span class="ic">${t2.ic}</span><span>${t(t2.k)}</span>${badge||lock}</div>`,
+            bot:`<button data-tab="${t2.id}"><span class="ic">${t2.ic}</span><span>${t(t2.k)}</span>${badge}</button>`}; });
+  side.innerHTML=html.map(h=>h.side).join('');
+  bot.innerHTML=html.map(h=>h.bot).join('');
+  side.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>navTo(el.dataset.tab));
+  bot.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>navTo(el.dataset.tab));
 }
-function render(){
-  applyStatic();
-  $('#hdrName').textContent=S.name;
-  $('#hdrAvatar').textContent=S.avatar||'🎬';
-  $('#hdrRank').textContent=rankOf(S.subs);
-  const pc=$('#hdrPrestige'); if(S.prestige>0){ pc.textContent=tf('prestigeChip',{n:S.prestige,p:Math.round(S.permaBonus*100)}); pc.classList.remove('hidden'); } else pc.classList.add('hidden');
-  animateStat('stSubs',S.subs); animateStat('stViews',S.views);
-  animateStat('stMoney',S.money,true); animateStat('stCreative',S.creative);
+function navTo(id){ const tb=TABS.find(x=>x.id===id); if(tb&&tb.lock&&tb.lock()){ toast(t(tb.lockMsg),'bad'); sfx('error'); return; } sfx('click'); activeTab=id; render(); }
+function applyTheme(){ document.documentElement.setAttribute('data-theme',S?S.theme:'nature'); }
+function applyStatic(){ document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.getAttribute('data-i18n')));
+  document.querySelectorAll('[data-ph]').forEach(el=>el.placeholder=t(el.getAttribute('data-ph'))); }
+
+function render(){ applyStatic(); applyTheme();
+  $('#sbName').textContent=S.name; $('#sbAvatar').textContent=S.avatar||'🎬'; $('#sbRank').textContent=rankOf(S.subs)+(S.prestige>0?(' · '+tf('prestigeChip',{n:S.prestige,p:Math.round(S.permaBonus*100)})):'');
+  animateStat('stSubs',S.subs); animateStat('stViews',S.views); animateStat('stMoney',S.money,true); animateStat('stCreative',S.creative);
   $('#stRep').textContent=Math.round(S.rep); $('#stDay').textContent=S.day;
   const me=maxEnergy(); $('#enTxt').textContent=Math.round(S.energy)+'/'+me; $('#enFill').style.width=clamp(S.energy/me*100,0,100)+'%';
-  $('#muteBtn').textContent=S.muted?'🔇':'🔊';
-  const nUn=S.events.filter(e=>!e.seen).length; const b=$('#evBadge');
-  if(b){ if(nUn>0){ b.textContent=nUn; b.classList.remove('hidden'); } else b.classList.add('hidden'); }
-  renderTab();
+  $('#muteBtn').textContent=S.muted?'🔇':'🔊'; $('#verLbl').textContent='v4 · '+t('level')+' '+S.level;
+  // уровень-кольцо
+  const lp=(S.xp-xpForLevel(S.level))/Math.max(1,(xpForLevel(S.level+1)-xpForLevel(S.level)));
+  const arc=$('#lvlArc'); if(arc) arc.setAttribute('stroke-dashoffset', 88*(1-clamp(lp,0,1))); const ln=$('#lvlNum'); if(ln) ln.textContent=S.level;
+  buildNav();
+  document.querySelectorAll('#navList .navitem[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTab));
+  document.querySelectorAll('#bottomnav button[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTab));
+  const v=$('#view');
+  const map={dash:viewDash,studio:viewStudio,shop:viewShop,skills:viewSkills,team:viewTeam,merch:viewMerch,deals:viewDeals,videos:viewVideos,quests:viewQuests,events:viewEvents,rivals:viewRivals,channel:viewChannel};
+  v.innerHTML=(map[activeTab]||viewDash)();
+  if(activeTab==='dash'){ drawChart('dashChart',S.history[dashMetric],accentCol()); }
+  if(activeTab==='channel'){ drawChart('cSubs',S.history.subs,accentCol()); drawChart('cViews',S.history.views,'#5aa9ff'); drawChart('cMoney',S.history.money,'#f2c14e'); }
+  bindView();
 }
-function renderTab(){
-  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab));
-  const c=$('#tabContent');
-  if(activeTab==='studio') c.innerHTML=viewStudio();
-  if(activeTab==='shop')   c.innerHTML=viewShop();
-  if(activeTab==='skills') c.innerHTML=viewSkills();
-  if(activeTab==='team')   c.innerHTML=viewTeam();
-  if(activeTab==='videos') c.innerHTML=viewVideos();
-  if(activeTab==='quests') c.innerHTML=viewQuests();
-  if(activeTab==='events') c.innerHTML=viewEvents();
-  if(activeTab==='rivals') c.innerHTML=viewRivals();
-  if(activeTab==='channel'){ c.innerHTML=viewChannel(); drawChart(); }
-  bindDynamic();
-}
-function trendBanner(){ if(!S.trend) return ''; const tr=NICHES[S.trend], mine=S.trend===S.niche;
-  return `<div class="trend"><span class="fire">🔥</span> ${t('trendNow')} <b>${tr.em} ${L(tr.nm)}</b>
-    ${mine?`<span class="pill" style="border-color:var(--accent);color:var(--accent)">${t('trendMine')}</span>`:`<span class="pill">${t('trendNot')}</span>`}
-    <span class="pill">${tf('trendDays',{d:S.trendDays})}</span></div>`; }
+function accentCol(){ try{ return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#39d353'; }catch(e){ return '#39d353'; } }
 
-const VTYPE_EM={short:'⚡',quick:'🎞️',normal:'🎬',epic:'🎇'};
-function goalBar(){
-  const nm=MILES.find(m=>!S.milestones[m.n]); if(!nm) return '';
-  const prev=[0].concat(MILES.map(m=>m.n)).filter(x=>x<nm.n).pop()||0;
-  const pct=clamp((S.subs-prev)/(nm.n-prev)*100,0,100);
-  return `<div class="goalbar"><div class="lbl"><span>${t('nextGoal')}</span><span>${fmt(S.subs)} / ${fmt(nm.n)}</span></div>
-    <div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
-}
-function viewStudio(){
-  const N=NICHES[S.niche];
-  let cards='';
-  for(const [k,T] of Object.entries(VTYPES)){ const eCost=Math.round(T.energy*(1-S.staff.editor*0.07)); const dis=S.energy<eCost?'disabled':'';
-    cards+=`<div class="vtype ${dis}" data-vtype="${k}"><div class="big">${VTYPE_EM[k]||'🎬'}</div><div class="t">${L(T.nm)}</div><div class="d">${L(T.ds)}</div><div class="cost">⚡ ${eCost} · +${T.cr} ${t('creative').toLowerCase()}</div></div>`; }
-  const sdis=S.subs<100||S.energy<30?'disabled':'';
-  cards+=`<div class="vtype stream ${sdis}" data-stream="1"><div class="big">🔴</div><div class="t">${LANG==='ru'?'Стрим':'Live'}</div><div class="d">${LANG==='ru'?'Донаты и живые зрители':'Donations & live viewers'}</div><div class="cost">${S.subs<100?t('streamLocked'):'⚡ 30 · 💰'}</div></div>`;
-  return `<div class="panel"><h2>🎬 ${N.em} ${L(N.nm)}</h2>${trendBanner()}${goalBar()}
-    <h3>${t('makeVideo')}</h3><div class="vtypes">${cards}</div>
-    <div class="row" style="margin-top:14px">
-      <button class="btn ghost" id="restBtn">${t('nextDay')}</button>
-      <button class="btn ghost" id="promoBtn">${t('promo')} · ${money(promoteCost())}</button>
-    </div>
-    <div class="hint-keys">${t('keysHint')}</div></div>
-    <div class="panel"><h2>${t('feed')}</h2><div class="feed">${renderFeed()}</div></div>`;
-}
-function renderFeed(){ if(!S.log.length) return `<p class="muted">${t('feedEmpty')}</p>`;
-  return S.log.map(l=>`<div class="logline ${l.c}"><span class="tm">${t('day').slice(0,1)}${l.d}</span>${l.m}</div>`).join(''); }
+function trendBanner(){ if(!S.trend) return ''; const tr=NICHES[S.trend],mine=S.trend===S.niche;
+  return `<div class="trend">🔥 ${t('trendNow')} <b>${tr.em} ${L(tr.nm)}</b> ${mine?`<span class="pill ok">${t('trendMine')}</span>`:`<span class="pill">${t('trendNot')}</span>`} <span class="pill">${tf('trendDays',{d:S.trendDays})}</span></div>`; }
+function goalBar(){ const nm=MILES.find(m=>!S.milestones[m.n]); if(!nm) return ''; const prev=[0].concat(MILES.map(m=>m.n)).filter(x=>x<nm.n).pop()||0; const pct=clamp((S.subs-prev)/(nm.n-prev)*100,0,100);
+  return `<div class="goalbar"><div class="lbl"><span>${t('nextGoal')}</span><span>${fmt(S.subs)} / ${fmt(nm.n)}</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`; }
 
-function viewShop(){ let items='';
-  for(const [k,E] of Object.entries(EQUIP)){ const lv=S.equip[k],mx=lv>=EQUIP_MAX,c=equipCost(k); let segs='';
-    for(let i=0;i<EQUIP_MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
-    items+=`<div class="item"><div class="em">${E.em}</div><div class="info"><div class="nm">${L(E.nm)} <span class="pill">${t('lvl')} ${lv}/${EQUIP_MAX}</span></div><div class="ds">${L(E.ds)}</div><div class="lvlbar">${segs}</div></div>
-      <div class="buy"><div class="price">${mx?t('max'):money(c)}</div><button class="btn sm" data-buyeq="${k}" ${mx||S.money<c?'disabled':''}>${mx?'✓':t('buy')}</button></div></div>`; }
-  return `<div class="panel"><h2>${t('shopTitle')}</h2><p class="muted small">${t('shopHint')}</p>${items}</div>`; }
-
-function viewSkills(){ let items='';
-  for(const [k,SK] of Object.entries(SKILLS)){ const lv=S.skills[k],mx=lv>=SKILL_MAX,c=skillCost(k); let segs='';
-    for(let i=0;i<SKILL_MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
-    items+=`<div class="item"><div class="em">${SK.em}</div><div class="info"><div class="nm">${L(SK.nm)} <span class="pill">${t('lvl')} ${lv}/${SKILL_MAX}</span></div><div class="ds">${L(SK.ds)}</div><div class="lvlbar">${segs}</div></div>
-      <div class="buy"><div class="price">${mx?t('max'):money(c)+' · ⚡20'}</div><button class="btn sm" data-train="${k}" ${mx||S.money<c||S.energy<20?'disabled':''}>${mx?'✓':t('learn')}</button></div></div>`; }
-  return `<div class="panel"><h2>${t('skillsTitle')}</h2><p class="muted small">${t('skillsHint')}</p>${items}</div>`; }
-
-function viewTeam(){ let items='';
-  for(const [k,ST] of Object.entries(STAFF)){ const lv=S.staff[k],mx=lv>=STAFF_MAX,c=staffCost(k); let segs='';
-    for(let i=0;i<STAFF_MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
-    items+=`<div class="item"><div class="em">${ST.em}</div><div class="info"><div class="nm">${L(ST.nm)} <span class="pill">${t('lvl')} ${lv}/${STAFF_MAX}</span></div><div class="ds">${L(ST.ds)}</div><div class="lvlbar">${segs}</div></div>
-      <div class="buy"><div class="price">${mx?t('max'):money(c)}</div><button class="btn sm" data-hire="${k}" ${mx||S.money<c?'disabled':''}>${mx?'✓':t('hire')}</button></div></div>`; }
-  return `<div class="panel"><h2>${t('teamTitle')}</h2><p class="muted small">${t('teamHint')}</p>${items}</div>`; }
-
-function viewVideos(){ if(!S.videos.length) return `<div class="panel"><h2>${t('videosTitle')}</h2><p class="muted">${t('videosEmpty')}</p></div>`;
-  const rows=S.videos.map(v=>`<tr><td>${v.viral?'<span class="vir">🔥 </span>':''}${v.title}</td><td class="num">${fmt(v.views)}</td><td class="num">${v.subs>=0?'+':''}${fmt(v.subs)}</td><td class="num">${fmt(v.likes)}</td><td class="num">${money(v.money)}</td><td class="num">${v.q}</td><td class="num muted">${t('day').slice(0,1)}${v.day}</td></tr>`).join('');
-  return `<div class="panel"><h2>${t('videosTitle')} <span class="muted small">(${S.stats.videosMade})</span></h2><div style="overflow:auto">
-    <table><thead><tr><th>${LANG==='ru'?'Название':'Title'}</th><th style="text-align:right">${t('views')}</th><th style="text-align:right">${t('subs')}</th><th style="text-align:right">${LANG==='ru'?'Лайки':'Likes'}</th><th style="text-align:right">$</th><th style="text-align:right">${LANG==='ru'?'Кач':'Q'}</th><th style="text-align:right">${t('day')}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`; }
-
-function viewQuests(){ ensureQuests(); let items='';
-  S.quests.forEach(q=>{ const p=Math.min(questProgress(q),q.target), pct=clamp(p/q.target*100,0,100);
-    items+=`<div class="quest"><div class="em">🎯</div><div class="info"><div class="nm">${questLabel(q)}</div><div class="small muted">${fmt(p)} / ${fmt(q.target)}</div><div class="qbar"><div class="fill" style="width:${pct}%"></div></div></div><div class="rew">+${money(q.reward)}</div></div>`; });
-  return `<div class="panel"><h2>${t('questsTitle')} <span class="muted small">(${S.questsDone} ✓)</span></h2><p class="muted small">${t('questsHint')}</p>${items}</div>`; }
-
-function viewEvents(){ const un=S.events.filter(e=>!e.seen);
-  if(!un.length) return `<div class="panel"><h2>${t('eventsTitle')}</h2><p class="muted">${t('eventsEmpty')}</p></div>`;
-  let html=''; S.events.forEach((ev,idx)=>{ if(ev.seen) return; const def=EVENTS.find(e=>e.id===ev.id);
-    const btns=def.choices.map((ch,ci)=>`<button class="btn sm" data-ev="${idx}" data-choice="${ci}">${L(ch.t)}</button>`).join('');
-    html+=`<div class="panel" style="border-color:var(--warn)"><h2>${L(def.title)} <span class="pill">${t('day').slice(0,1)}${ev.day}</span></h2><p>${L(def.text)}</p><div class="row">${btns}</div></div>`; });
-  return html; }
-
-function viewRivals(){
-  const list=[{name:S.name,subs:S.subs,you:true,niche:S.niche}].concat(S.rivals.map(r=>({name:r.name,subs:r.subs,niche:r.niche})));
-  list.sort((a,b)=>b.subs-a.subs);
-  const rows=list.map((r,i)=>{
-    let btn='';
-    if(!r.you){ const rv=S.rivals.find(x=>x.name===r.name); const wait=rv&&rv.cd&&S.day<rv.cd;
-      btn=`<button class="btn sm ${wait?'ghost':''}" data-collab="${r.name}" ${wait||S.energy<30?'disabled':''}>${wait?t('collabCooldown'):t('collabDo')}</button>`; }
-    const face=r.you?(S.avatar+' '):(NICHES[r.niche].em+' ');
-    return `<div class="lb-row ${r.you?'you':''}"><div class="rk">#${i+1}</div><div class="nm">${face}${r.name} ${r.you?`<span class="nn">(${t('you')})</span>`:''}</div><div class="sb">${fmt(r.subs)}</div>${btn}</div>`;
-  }).join('');
-  return `<div class="panel"><h2>${t('rivalsTitle')}</h2><p class="muted small">${t('rivalsHint')} ${t('collabTip')}</p>${rows}</div>`;
-}
-
-function viewChannel(){ const N=NICHES[S.niche]; const nm=MILES.find(m=>!S.milestones[m.n]);
-  const achHtml=ACHS.map(a=>`<div class="ach ${S.achs[a.id]?'got':''}"><div class="em">${a.em}</div><div class="nm">${L(a.nm)}</div><div class="ds">${L(a.ds)}</div></div>`).join('');
-  const prestige = canPrestige()
-    ? `<button class="btn purple block" id="prestigeBtn">${t('prestigeBtn')}</button>`
-    : `<p class="muted small">${t('prestigeLocked')}</p>`;
-  return `<div class="panel"><h2>${t('channelTitle')}</h2>
+/* ---- ДАШБОРД ---- */
+function viewDash(){
+  const last=S.videos[0];
+  const metrics=[['subs',t('subs'),'var(--accent)'],['views',t('views'),'#5aa9ff'],['money',t('moneyK'),'#f2c14e']];
+  return `<div class="panel"><h2>🏠 ${t('dashTitle')}</h2>
     <div class="kpi">
       <div class="box"><div class="v" style="color:var(--accent)">${fmt(S.subs)}</div><div class="k">${t('subs')}</div></div>
       <div class="box"><div class="v">${fmt(S.views)}</div><div class="k">${t('views')}</div></div>
       <div class="box"><div class="v" style="color:var(--gold)">${money(S.money)}</div><div class="k">${t('moneyK')}</div></div>
-      <div class="box"><div class="v">${S.stats.virals}</div><div class="k">${LANG==='ru'?'Вирусных':'Virals'}</div></div>
-      <div class="box"><div class="v">${fmt(S.stats.bestViews)}</div><div class="k">${LANG==='ru'?'Рекорд':'Record'}</div></div>
-      <div class="box"><div class="v">${S.stats.streams}</div><div class="k">${LANG==='ru'?'Стримов':'Streams'}</div></div>
       <div class="box"><div class="v" style="color:var(--diamond)">${Math.round(S.rep)}</div><div class="k">${t('rep')}</div></div>
-      <div class="box"><div class="v" style="color:var(--purple)">${S.prestige}</div><div class="k">${t('channelsMade')}</div></div>
+      <div class="box"><div class="v" style="color:var(--purple)">${S.level}</div><div class="k">${t('level')}</div></div>
+      <div class="box"><div class="v">${S.stats.virals}</div><div class="k">${LANG==='ru'?'Вирусных':'Virals'}</div></div>
     </div>
-    <h3>${t('growth')}</h3><canvas id="chart" width="1000" height="220"></canvas>
-    ${nm?`<p class="muted small" style="margin-top:10px">${t('nextGoal')}: <b>${fmt(nm.n)}</b> · ${t('left')} ${fmt(nm.n-S.subs)}</p>`:`<p class="muted small">🏆 ${LANG==='ru'?'Все цели достигнуты!':'All goals reached!'}</p>`}
-    <p class="small">${t('nicheL')}: <b>${N.em} ${L(N.nm)}</b> · ${t('monetL')}: <b>${S.monetized?t('monetOn'):t('monetOff')}</b></p>
+    ${goalBar()}
+    <h3>${t('growth')}</h3>
+    <div class="seg-toggle" style="margin-bottom:8px">${metrics.map(m=>`<button data-metric="${m[0]}" class="${dashMetric===m[0]?'on':''}">${m[1]}</button>`).join('')}</div>
+    <canvas id="dashChart" class="chart" width="1000" height="200"></canvas>
   </div>
-  <div class="panel"><h2>${t('trophyShelf')}</h2><div class="shelf">${
-    [['silver','🥈','100K'],['gold','🥇','1M'],['diamond','💎','10M'],['ruby','❤️','100M']]
-    .map(([id,em,lb])=>`<div class="trophy ${S.achs[id]?'got':''}"><div class="big">${em}</div><div class="lb">${lb}</div></div>`).join('')
-  }</div></div>
-  <div class="panel prestige-box"><h2>${t('prestigeTitle')}</h2><p class="muted small">${t('prestigeHint')}</p>${prestige}</div>
-  <div class="panel"><h2>${t('achsTitle')} <span class="muted small">(${Object.keys(S.achs).length}/${ACHS.length})</span></h2><div class="achs">${achHtml}</div></div>`; }
+  <div class="row">
+    <div class="panel" style="flex:1;min-width:280px"><h2>⚡ ${t('quickActions')}</h2>
+      <div class="row">
+        <button class="btn" data-q="video">${t('makeVideo')}</button>
+        <button class="btn ghost" data-q="stream">${t('goLive')}</button>
+        <button class="btn ghost" data-q="day">${t('nextDay')}</button>
+      </div>
+      <div class="hint-keys">${t('keysHint')}</div>
+    </div>
+    <div class="panel" style="flex:1;min-width:280px"><h2>📰 ${t('recent')}</h2>
+      <div class="feed">${renderFeed(8)}</div>
+    </div>
+  </div>`;
+}
 
-function drawChart(){ const cv=$('#chart'); if(!cv||!cv.getContext) return; const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
-  ctx.clearRect(0,0,W,H); const d=S.history; if(d.length<2) return; const max=Math.max(...d,1),pad=10;
-  ctx.beginPath(); d.forEach((v,i)=>{ const x=pad+(W-2*pad)*i/(d.length-1), y=H-pad-(H-2*pad)*(v/max); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
-  ctx.strokeStyle='#39d353'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
+/* ---- СТУДИЯ ---- */
+function viewStudio(){ const N=NICHES[S.niche]; if(!S.topics.length) genTopics();
+  const topics=S.topics.map((tp,i)=>`<div class="tile ${S.topicSel===i?'sel':''}" data-topic="${i}"><div class="t">${tp.title}</div><div class="tags"><span class="pill">${tp.tag}</span></div><div class="d">${t('forecast')}: ${forecastLabel(tp.hot)}</div></div>`).join('');
+  let vt=''; for(const [k,T] of Object.entries(VTYPES)){ const eCost=Math.round(T.energy*(1-S.staff.editor*0.07)); const dis=S.energy<eCost?'disabled':'';
+    vt+=`<div class="tile ${dis}" data-vtype="${k}"><div class="big">${T.em}</div><div class="t">${L(T.nm)}</div><div class="d">${L(T.ds)}</div><div class="cost">⚡ ${eCost} · +${T.cr} ${t('creative').toLowerCase()}</div></div>`; }
+  const sdis=S.subs<100||S.energy<30?'disabled':'';
+  vt+=`<div class="tile stream ${sdis}" data-stream="1"><div class="big">🔴</div><div class="t">${LANG==='ru'?'Стрим':'Live'}</div><div class="d">${LANG==='ru'?'Донаты и зрители':'Donations & viewers'}</div><div class="cost">${S.subs<100?(LANG==='ru'?'нужно 100':'need 100'):'⚡ 30 · 💰'}</div></div>`;
+  return `<div class="panel"><h2>🎬 ${N.em} ${L(N.nm)}</h2>${trendBanner()}${goalBar()}
+    <h3>${t('pickTopic')}</h3><div class="cards">${topics}</div>
+    <div style="margin-top:8px"><button class="btn ghost sm" id="rerollBtn">${t('reroll')}</button></div>
+    <h3>${t('makeVideo')}</h3><div class="cards">${vt}</div>
+    <div class="row" style="margin-top:14px"><button class="btn ghost" id="restBtn">${t('nextDay')}</button><button class="btn ghost" id="promoBtn">${t('promo')} · ${money(promoteCost())}</button></div>
+    <div class="hint-keys">${t('keysHint')}</div></div>
+    <div class="row">
+      <div class="panel" style="flex:1;min-width:280px"><h2>📰 ${t('feed')}</h2><div class="feed">${renderFeed()}</div></div>
+      <div class="panel" style="flex:1;min-width:280px"><h2>💬 ${t('comments')}</h2>${renderComments()}</div>
+    </div>`;
+}
+function renderFeed(lim){ const arr=lim?S.log.slice(0,lim):S.log; if(!arr.length) return `<p class="muted">${LANG==='ru'?'Пока пусто.':'Empty for now.'}</p>`;
+  return arr.map(l=>`<div class="logline ${l.c}"><span class="tm">${t('day').slice(0,1)}${l.d}</span>${l.m}</div>`).join(''); }
+function renderComments(){ if(!S.comments.length) return `<p class="muted">${t('noComments')}</p>`;
+  return S.comments.map((c,i)=>`<div class="comment ${c.replied?'replied':''}"><div class="ava">${c.av}</div><div class="body"><div class="who">@${c.who}</div><div class="txt">${c.txt}</div></div>${c.replied?`<span class="pill ok">✓ ${t('replied')}</span>`:`<button class="btn sm" data-reply="${i}">${t('reply')}</button>`}</div>`).join(''); }
+
+/* ---- МАГАЗИН / НАВЫКИ / КОМАНДА ---- */
+function listBlock(dataAttr, obj, lvObj, MAX, costFn, btnKey, titleKey, hintKey){
+  let items=''; for(const [k,E] of Object.entries(obj)){ const lv=lvObj[k],mx=lv>=MAX,c=costFn(k); let segs=''; for(let i=0;i<MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
+    const dis=mx||S.money<c||(dataAttr==='train'&&S.energy<20);
+    items+=`<div class="item"><div class="em">${E.em}</div><div class="info"><div class="nm">${L(E.nm)} <span class="pill">${t('lvl')} ${lv}/${MAX}</span></div><div class="ds">${L(E.ds)}</div><div class="lvlbar">${segs}</div></div>
+      <div class="buy"><div class="price">${mx?t('max'):money(c)+(dataAttr==='train'?' · ⚡20':'')}</div><button class="btn sm" data-${dataAttr}="${k}" ${dis?'disabled':''}>${mx?'✓':t(btnKey)}</button></div></div>`; }
+  return `<div class="panel"><h2>${t(titleKey)}</h2><p class="muted small">${t(hintKey)}</p>${items}</div>`;
+}
+const viewShop=()=>listBlock('buyeq',EQUIP,S.equip,EQUIP_MAX,equipCost,'buy','shopTitle','shopHint');
+const viewSkills=()=>listBlock('train',SKILLS,S.skills,SKILL_MAX,skillCost,'learn','skillsTitle','skillsHint');
+const viewTeam=()=>listBlock('hire',STAFF,S.staff,STAFF_MAX,staffCost,'hire','teamTitle','teamHint');
+
+/* ---- МЕРЧ ---- */
+function viewMerch(){ if(S.subs<5000) return `<div class="panel"><h2>🧢 ${t('t_merch')}</h2><p class="muted">${t('merchLocked')}</p></div>`;
+  const ml=merchList(); const rate=merchIncomeRate();
+  let items=ml.map((m,i)=>{ const owned=!!S.merch[i]; return `<div class="item"><div class="em">${m.em}</div><div class="info"><div class="nm">${m.nm} ${owned?'<span class="pill ok">✓ '+t('own')+'</span>':''}</div><div class="ds">+${(m.income*100).toFixed(1)}% ${LANG==='ru'?'к доходу в день':'daily income'}</div></div>
+    <div class="buy"><div class="price">${owned?'—':money(m.cost)}</div>${owned?'':`<button class="btn sm" data-merch="${i}" ${S.money<m.cost?'disabled':''}>${t('buy')}</button>`}</div></div>`; }).join('');
+  return `<div class="panel"><h2>🧢 ${t('merchTitle')}</h2><p class="muted small">${t('merchHint')}</p>
+    <div class="kpi" style="margin-bottom:12px"><div class="box"><div class="v" style="color:var(--gold)">${money(Math.round(S.subs*rate))}</div><div class="k">${LANG==='ru'?'Доход мерча/день':'Merch/day'}</div></div>
+      <div class="box"><div class="v">${Object.keys(S.merch).filter(k=>S.merch[k]).length}/${ml.length}</div><div class="k">${LANG==='ru'?'Дропов':'Drops'}</div></div></div>
+    ${items}</div>`;
+}
+/* ---- СПОНСОРЫ ---- */
+function viewDeals(){ if(S.subs<2000) return `<div class="panel"><h2>💼 ${t('t_deals')}</h2><p class="muted">${t('dealsLocked')}</p></div>`;
+  if(!S.sponsorOffers.length) genSponsors();
+  const active=S.sponsorActive?`<div class="item"><div class="em">💼</div><div class="info"><div class="nm">${S.sponsorActive.brand}</div><div class="ds">${money(S.sponsorActive.daily)} ${t('dealDaily')} · ${S.sponsorActive.left} ${t('dealDays')} · −${S.sponsorActive.repCost} ${t('rep').toLowerCase()}</div></div></div>`:`<p class="muted">${t('dealNone')}</p>`;
+  const offers=S.sponsorOffers.map((o,i)=>`<div class="item"><div class="em">💼</div><div class="info"><div class="nm">${o.brand}</div><div class="ds">${money(o.daily)} ${t('dealDaily')} × ${o.days} ${t('dealDays')} · −${o.repCost} ${t('rep').toLowerCase()} · ${LANG==='ru'?'бонус':'bonus'} ${money(o.sign)}</div></div>
+    <div class="buy"><button class="btn sm" data-sponsor="${i}" ${S.sponsorActive?'disabled':''}>${t('dealSign')}</button></div></div>`).join('');
+  return `<div class="panel"><h2>💼 ${t('dealsTitle')}</h2><p class="muted small">${t('dealsHint')}</p>
+    <h3>${t('dealActive')}</h3>${active}<h3>${t('dealOffers')}</h3>${offers}</div>`;
+}
+/* ---- ВИДЕО ---- */
+function viewVideos(){ if(!S.videos.length) return `<div class="panel"><h2>📼 ${t('videosTitle')}</h2><p class="muted">${t('videosEmpty')}</p></div>`;
+  const rows=S.videos.map(v=>`<tr><td>${v.viral?'<span class="vir">🔥 </span>':''}${v.title} <span class="pill">${v.tag||''}</span></td><td class="num">${fmt(v.views)}</td><td class="num">${v.subs>=0?'+':''}${fmt(v.subs)}</td><td class="num">${fmt(v.likes)}</td><td class="num">${money(v.money)}</td><td class="num">${v.q}</td></tr>`).join('');
+  return `<div class="panel"><h2>📼 ${t('videosTitle')} <span class="muted small">(${S.stats.videosMade})</span></h2><div style="overflow:auto"><table><thead><tr><th>${LANG==='ru'?'Название':'Title'}</th><th style="text-align:right">${t('views')}</th><th style="text-align:right">${t('subs')}</th><th style="text-align:right">${LANG==='ru'?'Лайки':'Likes'}</th><th style="text-align:right">$</th><th style="text-align:right">${LANG==='ru'?'Кач':'Q'}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`; }
+/* ---- КВЕСТЫ ---- */
+function viewQuests(){ ensureQuests(); const items=S.quests.map(q=>{ const p=Math.min(questProgress(q),q.target),pct=clamp(p/q.target*100,0,100);
+  return `<div class="quest"><div class="em">🎯</div><div class="info"><div class="nm">${questLabel(q)}</div><div class="small muted">${fmt(p)} / ${fmt(q.target)}</div><div class="qbar"><div class="fill" style="width:${pct}%"></div></div></div><div class="rew">+${money(q.reward)}</div></div>`; }).join('');
+  return `<div class="panel"><h2>🎯 ${t('questsTitle')} <span class="muted small">(${S.questsDone} ✓)</span></h2><p class="muted small">${t('questsHint')}</p>${items}</div>`; }
+/* ---- СОБЫТИЯ ---- */
+function viewEvents(){ const un=S.events.filter(e=>!e.seen); if(!un.length) return `<div class="panel"><h2>📨 ${t('eventsTitle')}</h2><p class="muted">${t('eventsEmpty')}</p></div>`;
+  let html=''; S.events.forEach((ev,idx)=>{ if(ev.seen) return; const def=EVENTS.find(e=>e.id===ev.id); const btns=def.choices.map((ch,ci)=>`<button class="btn sm" data-ev="${idx}" data-choice="${ci}">${L(ch.t)}</button>`).join('');
+    html+=`<div class="panel" style="border-color:var(--warn)"><h2>${L(def.title)} <span class="pill">${t('day').slice(0,1)}${ev.day}</span></h2><p>${L(def.text)}</p><div class="row">${btns}</div></div>`; }); return html; }
+/* ---- РЕЙТИНГ ---- */
+function viewRivals(){ const list=[{name:S.name,subs:S.subs,you:true,niche:S.niche}].concat(S.rivals.map(r=>({name:r.name,subs:r.subs,niche:r.niche}))); list.sort((a,b)=>b.subs-a.subs);
+  const rows=list.map((r,i)=>{ let btn=''; if(!r.you){ const rv=S.rivals.find(x=>x.name===r.name); const wait=rv&&rv.cd&&S.day<rv.cd; btn=`<button class="btn sm ${wait?'ghost':''}" data-collab="${r.name}" ${wait||S.energy<30?'disabled':''}>${wait?t('collabCooldown'):t('collabDo')}</button>`; }
+    const face=r.you?(S.avatar+' '):(NICHES[r.niche].em+' '); return `<div class="lb-row ${r.you?'you':''}"><div class="rk">#${i+1}</div><div class="nm">${face}${r.name} ${r.you?`<span class="nn">(${t('you')})</span>`:''}</div><div class="sb">${fmt(r.subs)}</div>${btn}</div>`; }).join('');
+  return `<div class="panel"><h2>🏆 ${t('rivalsTitle')}</h2><p class="muted small">${t('rivalsHint')} ${t('collabTip')}</p>${rows}</div>`; }
+/* ---- КАНАЛ ---- */
+function viewChannel(){ const N=NICHES[S.niche]; const achHtml=ACHS.map(a=>`<div class="ach ${S.achs[a.id]?'got':''}"><div class="em">${a.em}</div><div class="nm">${L(a.nm)}</div><div class="ds">${L(a.ds)}</div></div>`).join('');
+  const prestige=canPrestige()?`<button class="btn purple block" id="prestigeBtn">${t('prestigeBtn')}</button>`:`<p class="muted small">${t('prestigeLocked')}</p>`;
+  return `<div class="panel"><h2>📊 ${t('channelTitle')}</h2>
+    <div class="kpi">
+      <div class="box"><div class="v" style="color:var(--accent)">${fmt(S.subs)}</div><div class="k">${t('subs')}</div></div>
+      <div class="box"><div class="v">${fmt(S.views)}</div><div class="k">${t('views')}</div></div>
+      <div class="box"><div class="v" style="color:var(--gold)">${money(S.money)}</div><div class="k">${t('moneyK')}</div></div>
+      <div class="box"><div class="v">${S.stats.videosMade}</div><div class="k">${LANG==='ru'?'Видео':'Videos'}</div></div>
+      <div class="box"><div class="v">${S.stats.streams}</div><div class="k">${LANG==='ru'?'Стримов':'Streams'}</div></div>
+      <div class="box"><div class="v">${S.stats.replies}</div><div class="k">${LANG==='ru'?'Ответов':'Replies'}</div></div>
+      <div class="box"><div class="v" style="color:var(--purple)">${S.level}</div><div class="k">${t('level')}</div></div>
+      <div class="box"><div class="v" style="color:var(--diamond)">${Math.round(S.rep)}</div><div class="k">${t('rep')}</div></div>
+    </div>
+    <h3>${t('subs')}</h3><canvas id="cSubs" class="chart" width="1000" height="150"></canvas>
+    <h3>${t('views')}</h3><canvas id="cViews" class="chart" width="1000" height="150"></canvas>
+    <h3>${t('moneyK')}</h3><canvas id="cMoney" class="chart" width="1000" height="150"></canvas>
+    <p class="small" style="margin-top:10px">${t('nicheL')}: <b>${N.em} ${L(N.nm)}</b> · ${t('monetL')}: <b>${S.monetized?t('monetOn'):t('monetOff')}</b></p>
+  </div>
+  <div class="panel"><h2>🏆 ${t('trophyShelf')}</h2><div class="shelf">${[['silver','🥈','100K'],['gold','🥇','1M'],['diamond','💎','10M'],['ruby','❤️','100M']].map(([id,em,lb])=>`<div class="trophy ${S.achs[id]?'got':''}"><div class="big">${em}</div><div class="lb">${lb}</div></div>`).join('')}</div></div>
+  <div class="panel" style="border-color:var(--purple)"><h2>♻️ ${t('prestigeTitle')}</h2><p class="muted small">${t('prestigeHint')}</p>${prestige}</div>
+  <div class="panel"><h2>🏅 ${t('achsTitle')} <span class="muted small">(${Object.keys(S.achs).length}/${ACHS.length})</span></h2><div class="achs">${achHtml}</div></div>`; }
+
+function drawChart(id,data,color){ const cv=$('#'+id); if(!cv||!cv.getContext) return; const ctx=cv.getContext('2d'),W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+  if(!data||data.length<2) return; const max=Math.max(...data,1),min=Math.min(...data,0),pad=8,rng=max-min||1;
+  ctx.beginPath(); data.forEach((v,i)=>{ const x=pad+(W-2*pad)*i/(data.length-1),y=H-pad-(H-2*pad)*((v-min)/rng); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
   ctx.lineTo(pad+(W-2*pad),H-pad); ctx.lineTo(pad,H-pad); ctx.closePath();
-  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(57,211,83,.35)'); g.addColorStop(1,'rgba(57,211,83,0)'); ctx.fillStyle=g; ctx.fill(); }
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,color+'55'); g.addColorStop(1,color+'00'); ctx.fillStyle=g; ctx.fill(); }
 
-function bindDynamic(){
+/* ---- привязка обработчиков во view ---- */
+function bindView(){
+  document.querySelectorAll('[data-metric]').forEach(el=>el.onclick=()=>{ dashMetric=el.dataset.metric; render(); });
+  document.querySelectorAll('[data-q]').forEach(el=>el.onclick=()=>{ const a=el.dataset.q; if(a==='video'){ navTo('studio'); } else if(a==='stream'){ liveStream(); } else if(a==='day'){ nextDay(); } });
+  document.querySelectorAll('[data-topic]').forEach(el=>el.onclick=()=>{ S.topicSel=+el.dataset.topic; sfx('click'); render(); });
+  const rr=$('#rerollBtn'); if(rr) rr.onclick=()=>{ genTopics(); sfx('click'); render(); };
   document.querySelectorAll('[data-vtype]').forEach(el=>el.onclick=()=>makeVideo(el.dataset.vtype));
   document.querySelectorAll('[data-stream]').forEach(el=>el.onclick=()=>liveStream());
   document.querySelectorAll('[data-buyeq]').forEach(el=>el.onclick=()=>buyEquip(el.dataset.buyeq));
   document.querySelectorAll('[data-train]').forEach(el=>el.onclick=()=>trainSkill(el.dataset.train));
   document.querySelectorAll('[data-hire]').forEach(el=>el.onclick=()=>hireStaff(el.dataset.hire));
+  document.querySelectorAll('[data-merch]').forEach(el=>el.onclick=()=>buyMerch(+el.dataset.merch));
+  document.querySelectorAll('[data-sponsor]').forEach(el=>el.onclick=()=>signSponsor(+el.dataset.sponsor));
+  document.querySelectorAll('[data-reply]').forEach(el=>el.onclick=()=>replyComment(+el.dataset.reply));
   document.querySelectorAll('[data-collab]').forEach(el=>el.onclick=()=>collabRival(el.dataset.collab));
   document.querySelectorAll('[data-ev]').forEach(el=>el.onclick=()=>resolveEvent(+el.dataset.ev,+el.dataset.choice));
-  const rb=$('#restBtn'); if(rb) rb.onclick=nextDay;
-  const pb=$('#promoBtn'); if(pb) pb.onclick=promote;
+  const rb=$('#restBtn'); if(rb) rb.onclick=nextDay; const pb=$('#promoBtn'); if(pb) pb.onclick=promote;
   const pr=$('#prestigeBtn'); if(pr) pr.onclick=()=>confirmModal(t('prestigeTitle'),t('prestigeHint'),doPrestige);
 }
 
 /* ============================ ТИКЕР ============================ */
 let tickI=0;
 function tickerLine(){ const pool=NEWS[LANG]||NEWS.ru; const top=S.rivals&&S.rivals.length?S.rivals.reduce((a,b)=>a.subs>b.subs?a:b):null;
-  const extra = top?`👑 ${LANG==='ru'?'Лидер':'Leader'}: <b>${top.name}</b> (${fmt(top.subs)})` : '';
-  const arr = extra?pool.concat([extra]):pool; return arr[tickI%arr.length]; }
-function startTicker(){ const el=$('#ticker'); if(!el) return; const upd=()=>{ if(!S) return; el.innerHTML='📢 '+tickerLine(); tickI++; }; upd(); setInterval(upd, 6000); }
+  const extra=top?`👑 ${LANG==='ru'?'Лидер':'Leader'}: <b>${top.name}</b> (${fmt(top.subs)})`:''; const arr=extra?pool.concat([extra]):pool; return arr[tickI%arr.length]; }
+function startTicker(){ const el=$('#ticker'); if(!el) return; const upd=()=>{ if(!S) return; el.innerHTML='📢 '+tickerLine(); tickI++; }; upd(); setInterval(upd,6000); }
 
-/* ============================ ONBOARDING ============================ */
+/* ============================ НАСТРОЙКИ ============================ */
+function openSettings(){ const box=$('#modalBox');
+  const themes=[['nature',t('themeNature')],['midnight',t('themeMidnight')],['sunset',t('themeSunset')]];
+  box.innerHTML=`<h3>${t('settingsTitle')}</h3>
+    <div class="field"><label>${t('theme')}</label><div class="seg-toggle">${themes.map(([k,n])=>`<button data-theme="${k}" class="${S.theme===k?'on':''}">${n}</button>`).join('')}</div></div>
+    <div class="field"><label>${t('sound')}: <span id="volLbl">${Math.round(S.volume*100)}%</span></label><input type="range" id="volRange" min="0" max="100" value="${Math.round(S.volume*100)}"></div>
+    <div class="field"><label>${t('language')}</label><div class="seg-toggle"><button data-lang="ru" class="${LANG==='ru'?'on':''}">RU</button><button data-lang="en" class="${LANG==='en'?'on':''}">EN</button></div></div>
+    <div class="field"><label>${t('exportSave')}</label><textarea id="expArea" readonly>${btoa(unescape(encodeURIComponent(JSON.stringify(S))))}</textarea><button class="btn ghost sm" id="copyBtn" style="margin-top:6px">${t('copy')}</button></div>
+    <div class="field"><label>${t('importSave')}</label><textarea id="impArea" placeholder="..."></textarea><button class="btn ghost sm" id="impBtn" style="margin-top:6px">${t('apply')}</button></div>
+    <div class="actions"><button class="btn danger" id="resetBtn2">${t('reset')}</button><button class="btn" id="closeBtn">${t('close')}</button></div>`;
+  $('#modal').classList.remove('hidden');
+  box.querySelectorAll('[data-theme]').forEach(el=>el.onclick=()=>{ S.theme=el.dataset.theme; sfx('click'); applyTheme(); box.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('on',x===el)); save(); });
+  box.querySelectorAll('[data-lang]').forEach(el=>el.onclick=()=>{ LANG=el.dataset.lang; S.lang=LANG; sfx('click'); $('#modal').classList.add('hidden'); buildNav(); render(); openSettings(); });
+  const vr=$('#volRange'); if(vr) vr.oninput=()=>{ S.volume=vr.value/100; $('#volLbl').textContent=vr.value+'%'; save(); };
+  const cp=$('#copyBtn'); if(cp) cp.onclick=()=>{ const ta=$('#expArea'); ta.select(); try{ document.execCommand('copy'); }catch(e){} if(navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(()=>{}); toast(t('copied')); };
+  const ib=$('#impBtn'); if(ib) ib.onclick=()=>{ try{ const raw=decodeURIComponent(escape(atob($('#impArea').value.trim()))); const s=JSON.parse(raw); if(!s.name||!s.niche) throw 0; S=s; LANG=S.lang||LANG; migrate(); $('#modal').classList.add('hidden'); toast(t('imported')); buildNav(); render(); save(); }catch(e){ toast(t('importBad'),'bad'); } };
+  $('#resetBtn2').onclick=()=>confirmModal(t('resetQ'),t('resetT'),()=>{ localStorage.removeItem(SAVE_KEY); location.reload(); });
+  $('#closeBtn').onclick=()=>$('#modal').classList.add('hidden');
+}
+function confirmModal(title,text,onYes){ const box=$('#modalBox'); box.innerHTML=`<h3>${title}</h3><p>${text}</p><div class="actions"><button class="btn danger" id="mNo">${t('cancel')}</button><button class="btn" id="mYes">${t('yes')}</button></div>`; $('#modal').classList.remove('hidden'); $('#mNo').onclick=()=>$('#modal').classList.add('hidden'); $('#mYes').onclick=()=>{ $('#modal').classList.add('hidden'); onYes(); }; }
+
+/* ============================ ONBOARDING / BOOT ============================ */
 let selNiche=null, selAvatar='🎬';
-function buildOnboard(){
-  const ag=$('#avatarGrid');
-  if(ag){ ag.innerHTML=AVATARS.map(a=>`<div class="av-opt ${a===selAvatar?'sel':''}" data-a="${a}">${a}</div>`).join('');
-    ag.querySelectorAll('.av-opt').forEach(el=>el.onclick=()=>{ sfx('click'); ag.querySelectorAll('.av-opt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); selAvatar=el.dataset.a; }); }
-  const grid=$('#nicheGrid');
-  grid.innerHTML=Object.entries(NICHES).map(([k,n])=>`<div class="niche ${k===selNiche?'sel':''}" data-n="${k}"><span class="em">${n.em}</span><span class="nm">${L(n.nm)}</span><span class="rp">RPM $${n.rpm}</span></div>`).join('');
+function buildOnboard(){ const ag=$('#avatarGrid');
+  if(ag){ ag.innerHTML=AVATARS.map(a=>`<div class="av-opt ${a===selAvatar?'sel':''}" data-a="${a}">${a}</div>`).join(''); ag.querySelectorAll('.av-opt').forEach(el=>el.onclick=()=>{ sfx('click'); ag.querySelectorAll('.av-opt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); selAvatar=el.dataset.a; }); }
+  const grid=$('#nicheGrid'); grid.innerHTML=Object.entries(NICHES).map(([k,n])=>`<div class="niche ${k===selNiche?'sel':''}" data-n="${k}"><span class="em">${n.em}</span><span class="nm">${L(n.nm)}</span><span class="rp">RPM $${n.rpm}</span></div>`).join('');
   grid.querySelectorAll('.niche').forEach(el=>el.onclick=()=>{ sfx('click'); grid.querySelectorAll('.niche').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); selNiche=el.dataset.n; });
   applyStatic();
 }
 function startGame(){ const nm=$('#chanName').value.trim()||(LANG==='ru'?'Мой канал':'My channel'); if(!selNiche){ toast(t('pickNiche'),'bad'); sfx('error'); return; }
-  S=freshState(nm,selNiche); S.avatar=selAvatar; ensureQuests(); log((LANG==='ru'?'Канал «':'Channel “')+nm+(LANG==='ru'?'» создан. Удачи! 🎬':'” created. Good luck! 🎬'),'good'); save(); showGame(); }
-function showGame(){ $('#onboard').classList.add('hidden'); $('#game').classList.remove('hidden'); buildTabs(); render(); startTicker(); }
-function confirmModal(title,text,onYes){ const box=$('#modalBox');
-  box.innerHTML=`<h3>${title}</h3><p>${text}</p><div class="actions"><button class="btn danger" id="mNo">${t('cancel')}</button><button class="btn" id="mYes">${t('yes')}</button></div>`;
-  $('#modal').classList.remove('hidden'); $('#mNo').onclick=()=>$('#modal').classList.add('hidden'); $('#mYes').onclick=()=>{ $('#modal').classList.add('hidden'); onYes(); }; }
-function toggleLang(){ LANG=LANG==='ru'?'en':'ru'; if(S) S.lang=LANG; if(S){ buildTabs(); render(); } else { buildOnboard(); } save&&S&&save(); }
+  S=freshState(nm,selNiche); S.avatar=selAvatar; ensureQuests(); genTopics(); genSponsors(); log((LANG==='ru'?'Канал «':'Channel “')+nm+(LANG==='ru'?'» создан. Удачи! 🎬':'” created. Good luck! 🎬'),'good'); save(); showGame(); }
+function showGame(){ $('#onboard').classList.add('hidden'); $('#app').classList.remove('hidden'); applyTheme(); buildNav(); render(); startTicker(); startBg(); }
+function toggleLang(){ LANG=LANG==='ru'?'en':'ru'; if(S){ S.lang=LANG; buildNav(); render(); } else buildOnboard(); }
+function migrate(){ S.staff=S.staff||{editor:0,designer:0,writer:0,manager:0,moderator:0}; S.skills=S.skills||{editing:0,charisma:0,seo:0,thumb:0,writing:0};
+  S.equip=S.equip||{camera:0,mic:0,pc:0,light:0,soft:0,studio:0}; S.merch=S.merch||{}; S.comments=S.comments||[]; S.topics=S.topics||[]; if(S.topicSel==null)S.topicSel=-1;
+  S.sponsorOffers=S.sponsorOffers||[]; if(S.sponsorActive===undefined)S.sponsorActive=null; if(S.sponsorRefresh==null)S.sponsorRefresh=0;
+  S.rivals=S.rivals&&S.rivals.length?S.rivals:makeRivals(); S.quests=S.quests||[]; S.questsDone=S.questsDone||0; S.prestige=S.prestige||0; S.permaBonus=S.permaBonus||0;
+  S.xp=S.xp||0; S.level=S.level||levelFromXp(S.xp); S.theme=S.theme||'nature'; if(S.volume==null)S.volume=0.7; S.avatar=S.avatar||'🎬';
+  if(!S.history||Array.isArray(S.history)) S.history={subs:[S.subs||0],views:[S.views||0],money:[Math.round(S.money||0)]};
+  S.history.subs=S.history.subs||[0]; S.history.views=S.history.views||[0]; S.history.money=S.history.money||[0];
+  S.stats=S.stats||{videosMade:0,virals:0,strikes:0,bestViews:0,streams:0,replies:0}; if(S.stats.replies==null)S.stats.replies=0;
+  ensureQuests(); if(!S.topics.length) genTopics(); if(!S.sponsorOffers.length) genSponsors(); }
 
+if(typeof window!=='undefined' && window.addEventListener){
 window.addEventListener('DOMContentLoaded',()=>{
-  const saved=load();
-  if(saved){ LANG=saved.lang||'ru'; }
+  const saved=load(); if(saved) LANG=saved.lang||'ru';
   buildOnboard();
   $('#startBtn').onclick=()=>{ sfx('click'); startGame(); };
   $('#langBtnOnb').onclick=()=>{ sfx('click'); toggleLang(); };
-  $('#langBtn').onclick=()=>{ sfx('click'); toggleLang(); };
   $('#muteBtn').onclick=()=>{ S.muted=!S.muted; if(!S.muted) sfx('click'); render(); save(); };
-  $('#saveBtn').onclick=()=>{ save(); toast(t('saved')); };
-  $('#resetBtn').onclick=()=>confirmModal(t('resetQ'),t('resetT'),()=>{ localStorage.removeItem(SAVE_KEY); location.reload(); });
+  $('#settingsBtn').onclick=()=>{ sfx('click'); openSettings(); };
   window.addEventListener('mousemove',e=>{ lastPointer={x:e.clientX,y:e.clientY}; });
   window.addEventListener('pointerdown',e=>{ lastPointer={x:e.clientX,y:e.clientY}; });
   window.addEventListener('touchstart',e=>{ if(e.touches&&e.touches[0]) lastPointer={x:e.touches[0].clientX,y:e.touches[0].clientY}; },{passive:true});
-  window.addEventListener('keydown',e=>{
-    if(!S || $('#game').classList.contains('hidden')) return;
-    const tag=(e.target&&e.target.tagName)||''; if(tag==='INPUT'||tag==='TEXTAREA') return;
+  window.addEventListener('keydown',e=>{ if(!S||$('#app').classList.contains('hidden')) return; const tag=(e.target&&e.target.tagName)||''; if(tag==='INPUT'||tag==='TEXTAREA') return;
     if(e.code==='Space'){ e.preventDefault(); const eCost=Math.round(VTYPES.normal.energy*(1-S.staff.editor*0.07)); makeVideo(S.energy>=eCost?'normal':'quick'); }
-    else if(e.code==='KeyS'){ liveStream(); }
-    else if(e.code==='KeyN'){ nextDay(); }
-  });
-  if(saved){ S=saved; S.avatar=S.avatar||'🎬';
-    // миграция полей из старых сейвов
-    S.staff=S.staff||{editor:0,designer:0,writer:0,manager:0,moderator:0};
-    S.rivals=S.rivals&&S.rivals.length?S.rivals:makeRivals();
-    S.quests=S.quests||[]; S.questsDone=S.questsDone||0; S.prestige=S.prestige||0; S.permaBonus=S.permaBonus||0;
-    S.stats=S.stats||{videosMade:0,virals:0,strikes:0,bestViews:0,streams:0}; if(S.stats.streams===undefined)S.stats.streams=0;
-    ensureQuests(); showGame(); }
+    else if(e.code==='KeyS'){ liveStream(); } else if(e.code==='KeyN'){ nextDay(); } });
+  if(saved){ S=saved; migrate(); showGame(); }
 });
+}
+
 </script>
 </body>
 </html>
