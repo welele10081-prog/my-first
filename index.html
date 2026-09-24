@@ -156,7 +156,7 @@
   .prestige-box{border:1px solid var(--purple);background:rgba(201,139,255,.06)}
 
   /* ---------- UI 3.0: полировка и эффекты ---------- */
-  #fx{position:fixed;inset:0;pointer-events:none;z-index:90}
+  #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90;display:none}
   .float-num{position:fixed;z-index:80;pointer-events:none;font-weight:800;font-size:15px;
     text-shadow:0 2px 8px rgba(0,0,0,.6);animation:floatUp 1.1s ease-out forwards;white-space:nowrap}
   @keyframes floatUp{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-46px);opacity:0}}
@@ -205,6 +205,18 @@
   .kpi .box{transition:.2s} .kpi .box:hover{border-color:var(--accent2);transform:translateY(-2px)}
   .hint-keys{font-size:11px;color:var(--muted);margin-top:8px}
   .hint-keys kbd{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px}
+
+  /* компактная шапка на узких экранах */
+  @media(max-width:640px){
+    .top .wrap{gap:8px;padding:8px 12px}
+    .brand{font-size:15px;order:1}
+    .hdr-tools{order:2;margin-left:auto}
+    .stats{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;gap:14px;padding-bottom:2px;scrollbar-width:none}
+    .stats::-webkit-scrollbar{display:none}
+    .stat{align-items:flex-start;min-width:auto}
+    .stat .v{font-size:15px}
+    .energy-wrap{order:4;max-width:none}
+  }
 </style>
 </head>
 <body>
@@ -497,7 +509,7 @@ let confParts=[], confRAF=0;
 function confetti(power){
   if(typeof requestAnimationFrame==='undefined') return;
   const cv=$('#fx'); if(!cv||!cv.getContext) return;
-  cv.width=innerWidth; cv.height=innerHeight; const ctx=cv.getContext('2d');
+  cv.style.display='block'; cv.width=innerWidth; cv.height=innerHeight; const ctx=cv.getContext('2d');
   const cols=['#39d353','#f2c14e','#7ee3ff','#ff5c7a','#c98bff','#ffffff'];
   const n=power||90;
   for(let i=0;i<n;i++) confParts.push({x:innerWidth/2+rnd(-90,90), y:innerHeight*0.32,
@@ -508,7 +520,7 @@ function confetti(power){
         ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.globalAlpha=clamp(p.life/40,0,1);
         ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore(); });
       confParts=confParts.filter(p=>p.life>0 && p.y<cv.height+20);
-      if(confParts.length){ confRAF=requestAnimationFrame(step); } else { confRAF=0; ctx.clearRect(0,0,cv.width,cv.height); } };
+      if(confParts.length){ confRAF=requestAnimationFrame(step); } else { confRAF=0; ctx.clearRect(0,0,cv.width,cv.height); cv.style.display='none'; } };
     confRAF=requestAnimationFrame(step);
   }
 }
