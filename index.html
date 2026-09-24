@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TubeTycoon — Симулятор Ютубера</title>
+<meta name="description" content="Симулятор карьеры ютубера: снимай видео, набирай подписчиков, апгрейди студию, лови вирусы и получай play-кнопки.">
+<style>
+  :root{
+    --bg:#080a08; --panel:#111511; --panel2:#161c16; --line:#242e24;
+    --txt:#e6efe6; --muted:#8fa38f; --accent:#39d353; --accent2:#2ea043;
+    --gold:#f2c14e; --silver:#c9d1d9; --diamond:#7ee3ff; --ruby:#ff5c7a;
+    --danger:#ff6b6b; --warn:#ffcf5c; --radius:14px;
+    --shadow:0 6px 24px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(57,211,83,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(46,160,67,.08), transparent 60%),
+      var(--bg);
+    color:var(--txt);
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    min-height:100vh; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px}
+  .hidden{display:none !important}
+
+  /* ---------- Onboarding ---------- */
+  #onboard{max-width:720px;margin:6vh auto;padding:16px}
+  .logo{font-size:clamp(28px,6vw,46px);font-weight:800;letter-spacing:-1px;text-align:center;margin:0 0 6px}
+  .logo .play{color:var(--accent)}
+  .tag{text-align:center;color:var(--muted);margin:0 0 22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .field{margin:14px 0}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+  input[type=text]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:16px}
+  input[type=text]:focus{outline:none;border-color:var(--accent)}
+  .niches{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
+  .niche{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:12px;text-align:center;transition:.15s;user-select:none}
+  .niche:hover{border-color:var(--accent2);transform:translateY(-2px)}
+  .niche.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(57,211,83,.25) inset}
+  .niche .em{font-size:26px;display:block}
+  .niche .nm{font-weight:700;margin-top:4px}
+  .niche .rp{font-size:11px;color:var(--muted)}
+  .btn{cursor:pointer;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;background:var(--accent);color:#05230d;transition:.15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px)}
+  .btn.block{width:100%;margin-top:18px;font-size:17px;padding:14px}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--accent)}
+  .btn.sm{padding:8px 12px;font-size:13px}
+  .btn.danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* ---------- Top bar ---------- */
+  header.top{position:sticky;top:0;z-index:20;background:rgba(8,10,8,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 16px}
+  .brand{font-weight:800;font-size:18px;white-space:nowrap}
+  .brand .play{color:var(--accent)}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;flex:1;justify-content:flex-end}
+  .stat{display:flex;flex-direction:column;align-items:flex-end;min-width:66px}
+  .stat .v{font-weight:800;font-size:16px}
+  .stat .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stat .v.money{color:var(--gold)}
+  .stat .v.subs{color:var(--accent)}
+  .stat .v.rep{color:var(--diamond)}
+  .stat .v.cr{color:#c98bff}
+
+  /* energy bar */
+  .energy-wrap{width:100%;max-width:240px}
+  .energy-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px}
+  .energy-bar{height:9px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}
+  .energy-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .3s}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:thin}
+  nav.tabs button{white-space:nowrap;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:9px 14px;border-radius:10px;font-size:14px;font-weight:600}
+  nav.tabs button.active{color:var(--txt);border-color:var(--accent);background:var(--panel2)}
+  nav.tabs button .badge{display:inline-block;min-width:16px;padding:0 4px;margin-left:6px;font-size:11px;border-radius:8px;background:var(--danger);color:#fff}
+
+  /* ---------- Panels ---------- */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .panel h2{margin:0 0 12px;font-size:18px}
+  .panel h3{margin:16px 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1;min-width:260px}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr}}
+
+  /* video type cards */
+  .vtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .vtype{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel2);cursor:pointer;transition:.15s;position:relative}
+  .vtype:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .vtype .t{font-weight:800;font-size:16px}
+  .vtype .d{font-size:12px;color:var(--muted);margin:6px 0}
+  .vtype .cost{font-size:12px;color:var(--warn)}
+  .vtype.disabled{opacity:.45;pointer-events:none}
+
+  /* shop / skills list */
+  .item{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:10px}
+  .item .em{font-size:26px;width:34px;text-align:center}
+  .item .info{flex:1;min-width:0}
+  .item .info .nm{font-weight:700}
+  .item .info .ds{font-size:12px;color:var(--muted)}
+  .lvlbar{display:flex;gap:3px;margin-top:5px}
+  .lvlbar .seg{height:6px;flex:1;border-radius:3px;background:var(--line)}
+  .lvlbar .seg.on{background:var(--accent)}
+  .item .buy{text-align:right;white-space:nowrap}
+  .item .buy .price{font-size:12px;color:var(--gold);margin-bottom:5px}
+
+  /* log feed */
+  .feed{max-height:320px;overflow:auto;scrollbar-width:thin}
+  .logline{padding:9px 12px;border-left:3px solid var(--line);margin-bottom:7px;background:var(--panel2);border-radius:0 8px 8px 0;font-size:14px}
+  .logline.good{border-color:var(--accent)}
+  .logline.bad{border-color:var(--danger)}
+  .logline.viral{border-color:var(--gold);background:rgba(242,193,78,.08)}
+  .logline.info{border-color:var(--diamond)}
+  .logline .tm{font-size:11px;color:var(--muted);margin-right:6px}
+
+  /* video table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr .vir{color:var(--gold)}
+
+  /* achievements */
+  .achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .ach{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel2);text-align:center;opacity:.4;transition:.2s}
+  .ach.got{opacity:1;border-color:var(--accent)}
+  .ach .em{font-size:30px}
+  .ach .nm{font-weight:700;font-size:13px;margin-top:4px}
+  .ach .ds{font-size:11px;color:var(--muted)}
+
+  /* toast */
+  #toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:460px}
+  .toast{background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;box-shadow:var(--shadow);font-weight:600;animation:pop .3s ease;max-width:100%}
+  .toast.bad{border-color:var(--danger)}
+  .toast.gold{border-color:var(--gold)}
+  @keyframes pop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+
+  /* modal */
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;display:flex;align-items:center;justify-content:center;padding:16px}
+  #modal .box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;max-width:460px;width:100%;box-shadow:var(--shadow)}
+  #modal h3{margin:0 0 10px}
+  #modal .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  #modal .actions .btn{flex:1;min-width:120px}
+
+  canvas{width:100%;display:block;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+  .trend{display:flex;align-items:center;gap:8px;background:rgba(57,211,83,.08);border:1px solid var(--accent2);border-radius:10px;padding:8px 12px;font-size:14px}
+  .trend .fire{font-size:18px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+  .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+  .kpi .box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .kpi .box .v{font-size:20px;font-weight:800}
+  .kpi .box .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:20px 0}
+</style>
+</head>
+<body>
+
+<!-- ============ ONBOARDING ============ -->
+<div id="onboard">
+  <h1 class="logo"><span class="play">▶</span> TubeTycoon</h1>
+  <p class="tag">Стань ютубером с нуля. От первого подписчика до алмазной кнопки.</p>
+  <div class="card">
+    <div class="field">
+      <label>Название канала</label>
+      <input type="text" id="chanName" maxlength="24" placeholder="Например: Дикая Природа">
+    </div>
+    <div class="field">
+      <label>Твоя ниша</label>
+      <div class="niches" id="nicheGrid"></div>
+    </div>
+    <button class="btn block" id="startBtn">Создать канал ▶</button>
+  </div>
+  <footer>Прогресс сохраняется автоматически в этом браузере.</footer>
+</div>
+
+<!-- ============ GAME ============ -->
+<div id="game" class="hidden">
+  <header class="top">
+    <div class="wrap">
+      <div class="brand"><span class="play">▶</span> <span id="hdrName">Канал</span></div>
+      <div class="stats">
+        <div class="stat"><span class="v subs" id="stSubs">0</span><span class="k">Подписчики</span></div>
+        <div class="stat"><span class="v" id="stViews">0</span><span class="k">Просмотры</span></div>
+        <div class="stat"><span class="v money" id="stMoney">$0</span><span class="k">Деньги</span></div>
+        <div class="stat"><span class="v cr" id="stCreative">0</span><span class="k">Креатив</span></div>
+        <div class="stat"><span class="v rep" id="stRep">50</span><span class="k">Репутация</span></div>
+        <div class="stat"><span class="v" id="stDay">1</span><span class="k">День</span></div>
+        <div class="energy-wrap">
+          <div class="energy-top"><span>⚡ Энергия</span><span id="enTxt">100/100</span></div>
+          <div class="energy-bar"><div class="energy-fill" id="enFill" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="tabs" id="tabs">
+      <button data-tab="studio" class="active">🎬 Студия</button>
+      <button data-tab="shop">🛒 Магазин</button>
+      <button data-tab="skills">📈 Навыки</button>
+      <button data-tab="videos">📼 Видео</button>
+      <button data-tab="events">📨 События <span class="badge hidden" id="evBadge">0</span></button>
+      <button data-tab="channel">📊 Канал</button>
+    </nav>
+
+    <div id="tabContent"></div>
+
+    <footer>
+      <button class="btn ghost sm" id="saveBtn">💾 Сохранить</button>
+      <button class="btn danger sm" id="resetBtn">🗑 Сбросить прогресс</button>
+    </footer>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="modal" class="hidden"><div class="box" id="modalBox"></div></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   TubeTycoon — одностраничный симулятор ютубера.
+   Весь код рабочий: ниже данные, движок расчёта, события, рендер и сохранение.
+   ========================================================================= */
+
+/* ---------------------- Данные: ниши ---------------------- */
+const NICHES = {
+  gaming:  {name:'Гейминг',    em:'🎮', rpm:1.9, appeal:1.15, disc:1.05,
+    titles:['Прошёл игру за 1 час','ТОП-10 моментов','Реакция на новый трейлер','Челлендж на выживание','Секретная концовка','Спидран мирового уровня']},
+  vlog:    {name:'Влоги',      em:'📹', rpm:2.4, appeal:1.05, disc:0.95,
+    titles:['Один день из жизни','Купил самое дешёвое и дорогое','24 часа в …','Мой переезд','Ответы на ваши вопросы','Что я ем за день']},
+  tech:    {name:'Технологии', em:'💻', rpm:4.6, appeal:0.9,  disc:0.9,
+    titles:['Обзор нового флагмана','Собрал ПК за копейки','5 гаджетов будущего','Тест на прочность','Стоит ли покупать?','AI изменил всё']},
+  music:   {name:'Музыка',     em:'🎵', rpm:1.3, appeal:1.1,  disc:1.1,
+    titles:['Кавер на хит','Бит за 10 минут','Реакция на альбом','Угадай песню','Мой новый трек','Разбор аккордов']},
+  cooking: {name:'Кулинария',  em:'🍳', rpm:3.3, appeal:1.0,  disc:1.0,
+    titles:['Готовлю уличную еду','Рецепт за 5 минут','Дорогое vs дешёвое блюдо','Пеку торт впервые','Кухня другой страны','Завтрак мечты']},
+  edu:     {name:'Обучение',   em:'📚', rpm:3.9, appeal:0.85, disc:0.85,
+    titles:['Объясняю просто сложное','История за 10 минут','Как это работает','5 фактов, которые удивят','Мифы, в которые все верят','Урок для новичков']},
+  nature:  {name:'Природа',    em:'🌲', rpm:2.9, appeal:1.08, disc:1.05,
+    titles:['Ночь в лесу в палатке','Звуки дикой природы 4K','Поход к водопаду','Встретил дикого зверя','Рассвет в горах','Дикий остров в одиночку']},
+  fitness: {name:'Спорт',      em:'💪', rpm:3.1, appeal:1.0,  disc:0.95,
+    titles:['30 дней челлендж','Тренировка дома','Что будет, если…','Мой прогресс за год','Разбор техники','Питание для формы']},
+};
+
+/* ---------------------- Данные: оборудование ---------------------- */
+const EQUIP = {
+  camera: {name:'Камера',        em:'📷', base:150, scale:1.85, ds:'Качество картинки'},
+  mic:    {name:'Микрофон',      em:'🎙️', base:90,  scale:1.8,  ds:'Чистота звука'},
+  pc:     {name:'Компьютер',     em:'🖥️', base:400, scale:1.95, ds:'Скорость монтажа, макс. энергия'},
+  light:  {name:'Освещение',     em:'💡', base:70,  scale:1.75, ds:'Профессиональный вид'},
+  soft:   {name:'Софт монтажа',  em:'🎬', base:120, scale:1.85, ds:'Эффекты и удержание'},
+  studio: {name:'Студия',        em:'🏠', base:800, scale:2.05, ds:'Общий буст качества'},
+};
+const EQUIP_MAX = 10;
+
+/* ---------------------- Данные: навыки ---------------------- */
+const SKILLS = {
+  editing: {name:'Монтаж',      em:'✂️', ds:'Качество и удержание зрителя'},
+  charisma:{name:'Харизма',     em:'😎', ds:'Конверсия зрителей в подписчиков'},
+  seo:     {name:'SEO / Алго',  em:'🔍', ds:'Попадание в рекомендации'},
+  thumb:   {name:'Обложки',     em:'🖼️', ds:'Кликабельность (CTR)'},
+  writing: {name:'Сценарий',    em:'📝', ds:'Глубина и виральность идей'},
+};
+const SKILL_MAX = 10;
+
+/* ---------------------- Данные: типы видео ---------------------- */
+const VTYPES = {
+  short:  {name:'Shorts',        energy:12, effort:0.5, cr:1,  ds:'Быстро, дёшево, ловит охваты'},
+  quick:  {name:'Быстрое видео', energy:22, effort:0.8, cr:1,  ds:'Меньше сил — меньше отдачи'},
+  normal: {name:'Обычное видео', energy:38, effort:1.15,cr:2,  ds:'Баланс усилий и результата'},
+  epic:   {name:'Эпик-проект',   energy:64, effort:1.7, cr:4,  ds:'Дорого по силам, но мощно'},
+};
+
+/* ---------------------- Данные: ачивки ---------------------- */
+const ACHS = [
+  {id:'first',  em:'🎬', nm:'Первое видео',   ds:'Снять 1 видео'},
+  {id:'s100',   em:'🌱', nm:'Первая сотня',   ds:'100 подписчиков'},
+  {id:'s1k',    em:'💵', nm:'Монетизация',    ds:'1 000 подписчиков'},
+  {id:'s10k',   em:'🚀', nm:'Разгон',         ds:'10 000 подписчиков'},
+  {id:'silver', em:'🥈', nm:'Серебро',        ds:'100 000 подписчиков'},
+  {id:'gold',   em:'🥇', nm:'Золото',         ds:'1 000 000 подписчиков'},
+  {id:'diamond',em:'💎', nm:'Алмаз',          ds:'10 000 000 подписчиков'},
+  {id:'ruby',   em:'❤️', nm:'Рубин',          ds:'100 000 000 подписчиков'},
+  {id:'viral',  em:'🔥', nm:'Вирус',          ds:'Снять вирусное видео'},
+  {id:'rich',   em:'🤑', nm:'Богач',          ds:'Накопить $100 000'},
+  {id:'collab', em:'🤝', nm:'Коллаб',         ds:'Сделать совместное видео'},
+  {id:'maxeq',  em:'🏆', nm:'Топ-студия',     ds:'Прокачать всё оборудование до макс.'},
+];
+
+/* ---------------------- Начальное состояние ---------------------- */
+function freshState(name, niche){
+  return {
+    v:1, name, niche,
+    subs:0, views:0, money:200, creative:0, rep:50,
+    day:1, energy:100,
+    equip:{camera:0,mic:0,pc:0,light:0,soft:0,studio:0},
+    skills:{editing:0,charisma:0,seo:0,thumb:0,writing:0},
+    videos:[], log:[], events:[],
+    monetized:false, milestones:{}, achs:{},
+    trend:null, trendDays:0,
+    history:[0], collabDone:false,
+    stats:{videosMade:0, virals:0, strikes:0, bestViews:0},
+  };
+}
+
+/* ---------------------- Утилиты ---------------------- */
+const $ = s => document.querySelector(s);
+const rnd = (a,b) => a + Math.random()*(b-a);
+const rint = (a,b) => Math.floor(rnd(a,b+1));
+const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+function fmt(n){
+  n = Math.round(n);
+  if(Math.abs(n) >= 1e9) return (n/1e9).toFixed(n%1e9?1:0)+'B';
+  if(Math.abs(n) >= 1e6) return (n/1e6).toFixed(n%1e6?1:0)+'M';
+  if(Math.abs(n) >= 1e3) return (n/1e3).toFixed(n%1e3?1:0)+'K';
+  return ''+n;
+}
+function money(n){ return '$'+fmt(n); }
+function maxEnergy(){ return 100 + S.equip.pc*10; }
+
+/* ---------------------- Сохранение ---------------------- */
+const SAVE_KEY = 'tubetycoon_save_v1';
+let S = null;
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(s && s.name && s.niche) return s;
+  }catch(e){}
+  return null;
+}
+
+/* ---------------------- Лог и уведомления ---------------------- */
+function log(msg, cls='info'){
+  S.log.unshift({d:S.day, m:msg, c:cls});
+  if(S.log.length > 60) S.log.pop();
+}
+function toast(msg, cls=''){
+  const t = document.createElement('div');
+  t.className = 'toast '+cls;
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 2600);
+}
+
+/* =========================================================================
+   ДВИЖОК: расчёт видео
+   ========================================================================= */
+function avgEquip(){
+  const e = S.equip;
+  return (e.camera + e.mic + e.pc + e.light + e.soft + e.studio*1.5) / 7.5;
+}
+function makeVideo(typeKey){
+  const T = VTYPES[typeKey];
+  if(S.energy < T.energy){
+    toast('Мало энергии — поспи 💤','bad'); return;
+  }
+  S.energy -= T.energy;
+
+  const N = NICHES[S.niche];
+  const sk = S.skills;
+  const eq = avgEquip(); // 0..~11
+
+  // Базовое качество ролика
+  let q = 1.4 + eq*0.62
+        + sk.editing*0.34 + sk.writing*0.22 + sk.charisma*0.12
+        + T.effort*1.8
+        + rnd(-1.4,1.6);
+  q = clamp(q, 0.4, 16);
+
+  // Факторы охвата
+  const trendMatch = (S.trend === S.niche);
+  const trendBonus = trendMatch ? 1.85 : 1.0;
+  const seoF   = (1 + sk.seo*0.16) * N.disc;
+  const ctr    = 1 + sk.thumb*0.13;
+  const repF   = 0.7 + S.rep/100;      // репутация 0..100 -> 0.7..1.7
+
+  // Вирусный бросок
+  let viralRoll = 1, viral = false;
+  const r = Math.random();
+  const viralChance = 0.02 + sk.writing*0.004 + (trendMatch?0.03:0);
+  if(r < viralChance){ viralRoll = rnd(9,42); viral = true; }
+  else if(r < 0.18)  { viralRoll = rnd(1.6,3.2); }
+  else               { viralRoll = rnd(0.7,1.35); }
+
+  // Авторитет канала: чем больше подписчиков, тем чаще рекомендуют — но с затухающей
+  // (корневой) отдачей, чтобы рост не улетал в бесконечную экспоненту.
+  const authority = 1 + Math.pow(S.subs, 0.5) / 26;
+
+  // Охват новых зрителей (рекомендации) — источник НОВЫХ подписчиков
+  const discovery = Math.pow(q,1.85) * (13 + sk.seo*9) * seoF * ctr * trendBonus * viralRoll * repF * authority;
+  // Свои подписчики пересматривают — дают просмотры и деньги, но не «переподписываются»
+  const subReach  = S.subs * clamp(0.20 + q*0.02, 0.12, 0.6);
+  let views = Math.round(discovery + subReach);
+  views = Math.max(views, rint(5,40)); // всегда хоть кто-то посмотрит
+
+  // Конверсия новых зрителей в подписчиков + насыщение аудитории (страховка от разгона)
+  const saturation = clamp(1 - S.subs/2e9, 0.02, 1);
+  let appeal = clamp(q*0.004 * N.appeal * (1 + sk.charisma*0.07) * ctr, 0.002, 0.09);
+  let dSubs = Math.round(discovery * appeal * saturation);
+  // Плохой ролик может отписать часть аудитории
+  if(q < 3 && S.subs > 50){ dSubs -= Math.round(S.subs*0.008*(3-q)); }
+  dSubs = Math.max(dSubs, -Math.round(S.subs*0.05));
+
+  const likes = Math.round(views * (0.018 + q*0.004));
+
+  // Деньги
+  const adBonus = 1 + S.equip.soft*0.03;
+  let earned;
+  if(S.monetized){ earned = Math.round(views/1000 * N.rpm * adBonus); }
+  else           { earned = Math.round(views/1000 * N.rpm * 0.12); } // «донаты», пока нет монетизации
+
+  // Применяем
+  S.views += views;
+  S.subs  = Math.max(0, S.subs + dSubs);
+  S.money += earned;
+  S.creative += T.cr;
+  S.rep = clamp(S.rep + (q>7? 1 : q<3? -2 : 0) + (viral?2:0), 0, 100);
+  S.stats.videosMade++;
+  if(viral){ S.stats.virals++; }
+  if(views > S.stats.bestViews) S.stats.bestViews = views;
+
+  const title = pick(N.titles);
+  const rec = {title, niche:S.niche, type:typeKey, views, subs:dSubs, likes, money:earned, day:S.day, viral, q:+q.toFixed(1)};
+  S.videos.unshift(rec);
+  if(S.videos.length > 60) S.videos.pop();
+
+  // Лог
+  if(viral){
+    log(`🔥 ВИРУС! «${title}» — ${fmt(views)} просмотров, +${fmt(dSubs)} подписчиков!`,'viral');
+    toast('🔥 ВИДЕО ВЗОРВАЛОСЬ!','gold');
+    grantAch('viral');
+  } else {
+    const cls = dSubs>=0 ? 'good' : 'bad';
+    log(`«${title}» — ${fmt(views)} просмотров, ${dSubs>=0?'+':''}${fmt(dSubs)} подп., ${money(earned)}`, cls);
+  }
+
+  grantAch('first');
+  checkMilestones();
+  maybeEvent(views, q);      // шанс сюжетного события
+  S.history.push(S.subs);
+  if(S.history.length>120) S.history.shift();
+
+  render(); save();
+}
+
+/* =========================================================================
+   МИЛСТОУНЫ (play-кнопки)
+   ========================================================================= */
+const MILES = [
+  {n:100,       id:'s100',   msg:'🌱 100 подписчиков!',           bonus:50},
+  {n:1000,      id:'s1k',    msg:'💵 1 000 подписчиков! Канал монетизирован!', bonus:500, monet:true},
+  {n:10000,     id:'s10k',   msg:'🚀 10 000 подписчиков!',        bonus:3000},
+  {n:100000,    id:'silver', msg:'🥈 Серебряная кнопка — 100K!',  bonus:20000},
+  {n:1000000,   id:'gold',   msg:'🥇 Золотая кнопка — 1 миллион!',bonus:150000},
+  {n:10000000,  id:'diamond',msg:'💎 Алмазная кнопка — 10 млн!',  bonus:1500000},
+  {n:100000000, id:'ruby',   msg:'❤️ Рубиновая кнопка — 100 млн!',bonus:15000000},
+];
+function checkMilestones(){
+  for(const m of MILES){
+    if(S.subs >= m.n && !S.milestones[m.n]){
+      S.milestones[m.n] = true;
+      if(m.monet){ S.monetized = true; }
+      S.money += m.bonus;
+      log(`${m.msg} Бонус ${money(m.bonus)}.`,'viral');
+      toast(m.msg,'gold');
+      grantAch(m.id);
+    }
+  }
+  if(S.money >= 100000) grantAch('rich');
+  if(Object.values(S.equip).every(v=>v>=EQUIP_MAX)) grantAch('maxeq');
+}
+function grantAch(id){
+  if(S.achs[id]) return;
+  S.achs[id] = true;
+  const a = ACHS.find(x=>x.id===id);
+  if(a){ toast(`🏅 Ачивка: ${a.nm}`); log(`🏅 Получена ачивка «${a.nm}».`,'info'); }
+}
+
+/* =========================================================================
+   СОБЫТИЯ (сюжетные, с выбором)
+   ========================================================================= */
+function maybeEvent(views, q){
+  if(Math.random() > 0.22) return;
+  const pool = EVENTS.filter(e => !e.cond || e.cond(views,q));
+  if(!pool.length) return;
+  const e = pick(pool);
+  S.events.unshift({id:e.id, day:S.day, seen:false});
+  if(S.events.length>30) S.events.pop();
+  toast('📨 Новое событие!');
+}
+const EVENTS = [
+  {
+    id:'strike', title:'⚠️ Копирайт-страйк', icon:'⚠️',
+    text:'На ваше видео поступила жалоба на авторские права. Ролик под угрозой демонетизации.',
+    cond:(v)=>v>500,
+    choices:[
+      {t:'Оспорить страйк (шанс)', run(){
+        if(Math.random()<0.6){ log('Страйк снят — справедливость восторжествовала!','good'); toast('Страйк снят ✅'); }
+        else { const loss=Math.round(S.money*0.15); S.money-=loss; S.rep=clamp(S.rep-4,0,100); log(`Апелляция отклонена: −${money(loss)}, репутация упала.`,'bad'); S.stats.strikes++; }
+      }},
+      {t:'Удалить видео', run(){ S.rep=clamp(S.rep+1,0,100); log('Видео удалено, конфликта нет.','info'); }},
+    ]
+  },
+  {
+    id:'brand', title:'🤝 Рекламная интеграция', icon:'💼',
+    text:'Бренд предлагает вставить рекламу в следующий ролик. Деньги хорошие, но часть зрителей не любит рекламу.',
+    cond:()=>S.subs>800,
+    choices:[
+      {t:'Согласиться', run(){ const g=Math.round(200+S.subs*0.4); S.money+=g; S.rep=clamp(S.rep-3,0,100); log(`Интеграция принесла ${money(g)} (репутация чуть просела).`,'good'); }},
+      {t:'Отказаться', run(){ S.rep=clamp(S.rep+2,0,100); log('Вы отказались от рекламы — зрители это оценили.','info'); }},
+    ]
+  },
+  {
+    id:'collab', title:'🎥 Предложение коллаба', icon:'🎥',
+    text:'Другой блогер предлагает снять совместное видео. Его аудитория может прийти к вам.',
+    cond:()=>S.subs>300,
+    choices:[
+      {t:'Снять коллаб (−30 энергии)', run(){
+        if(S.energy<30){ log('Не хватило энергии на коллаб.','bad'); return; }
+        S.energy-=30;
+        const g=Math.round(S.subs*rnd(0.08,0.2))+rint(50,400);
+        S.subs+=g; S.views+=g*rnd(3,7); S.rep=clamp(S.rep+3,0,100);
+        S.collabDone=true; grantAch('collab');
+        log(`Коллаб удался! +${fmt(g)} подписчиков.`,'good'); toast(`🤝 Коллаб: +${fmt(g)} подп.`);
+        checkMilestones();
+      }},
+      {t:'Отклонить', run(){ log('Вы отклонили коллаб.','info'); }},
+    ]
+  },
+  {
+    id:'hate', title:'😡 Волна хейта', icon:'😡',
+    text:'Под роликом набежали хейтеры. Комментарии токсичные, настроение так себе.',
+    choices:[
+      {t:'Ответить с юмором', run(){ if(Math.random()<0.7){ S.rep=clamp(S.rep+3,0,100); const g=rint(20,150); S.subs+=g; log(`Остроумный ответ разошёлся: +${fmt(g)} подписчиков!`,'good'); } else { S.rep=clamp(S.rep-2,0,100); log('Шутка не зашла, стало хуже.','bad'); } }},
+      {t:'Включить модерацию', run(){ S.rep=clamp(S.rep+1,0,100); log('Токсичные комментарии скрыты. Тишина и покой.','info'); }},
+      {t:'Игнорировать', run(){ S.rep=clamp(S.rep-3,0,100); log('Хейт разросся, репутация просела.','bad'); }},
+    ]
+  },
+  {
+    id:'trendtip', title:'📈 Инсайд по тренду', icon:'📈',
+    text:'Знакомый монтажёр слил, какая тема скоро выстрелит. Подстроиться под тренд?',
+    choices:[
+      {t:'Поймать тренд', run(){ const keys=Object.keys(NICHES); S.trend=S.niche; S.trendDays=3; log('Вы поймали тренд в своей нише на 3 дня! 🔥','good'); toast('Тренд активирован 🔥'); }},
+      {t:'Пропустить', run(){ log('Вы решили не гнаться за трендом.','info'); }},
+    ]
+  },
+  {
+    id:'gift', title:'🎁 Подарок от фанатов', icon:'🎁',
+    text:'Ваши зрители скинулись и прислали донат в знак поддержки!',
+    choices:[
+      {t:'Принять с благодарностью', run(){ const g=Math.round(50+S.subs*0.05); S.money+=g; S.rep=clamp(S.rep+2,0,100); log(`Фанаты задонатили ${money(g)}! ❤️`,'good'); }},
+    ]
+  },
+  {
+    id:'burnout', title:'😮‍💨 Выгорание', icon:'😮‍💨',
+    text:'Вы чувствуете усталость от контента. Нужно решить, как быть.',
+    cond:(v,q)=>S.stats.videosMade>10,
+    choices:[
+      {t:'Взять выходной (+энергия, −день)', run(){ S.energy=maxEnergy(); S.day++; log('День отдыха. Энергия восстановлена.','info'); }},
+      {t:'Работать через силу', run(){ S.rep=clamp(S.rep-2,0,100); log('Вы продолжили на морально-волевых. Риск для качества.','bad'); }},
+    ]
+  },
+];
+function resolveEvent(idx, choiceIdx){
+  const ev = S.events[idx];
+  if(!ev || ev.seen) return;
+  const def = EVENTS.find(e=>e.id===ev.id);
+  def.choices[choiceIdx].run();
+  ev.seen = true;
+  checkMilestones();
+  render(); save();
+}
+
+/* =========================================================================
+   ДЕЙСТВИЯ: магазин, навыки, день, промо
+   ========================================================================= */
+function equipCost(key){ const e=EQUIP[key]; return Math.round(e.base * Math.pow(e.scale, S.equip[key])); }
+function buyEquip(key){
+  if(S.equip[key] >= EQUIP_MAX){ toast('Уже максимум'); return; }
+  const c = equipCost(key);
+  if(S.money < c){ toast('Не хватает денег','bad'); return; }
+  S.money -= c; S.equip[key]++;
+  log(`Апгрейд: ${EQUIP[key].name} → ур.${S.equip[key]}.`,'good');
+  toast(`⬆️ ${EQUIP[key].name} ур.${S.equip[key]}`);
+  checkMilestones(); render(); save();
+}
+function skillCost(key){ return Math.round(60 * Math.pow(1.7, S.skills[key])); }
+function trainSkill(key){
+  if(S.skills[key] >= SKILL_MAX){ toast('Навык максимален'); return; }
+  const c = skillCost(key);
+  if(S.money < c){ toast('Не хватает денег','bad'); return; }
+  if(S.energy < 20){ toast('Мало энергии для учёбы','bad'); return; }
+  S.money -= c; S.energy -= 20; S.skills[key]++;
+  log(`Прокачан навык: ${SKILLS[key].name} → ур.${S.skills[key]}.`,'good');
+  toast(`📈 ${SKILLS[key].name} ур.${S.skills[key]}`);
+  render(); save();
+}
+function nextDay(){
+  S.day++;
+  S.energy = maxEnergy();
+  // отток/приток по репутации
+  const drift = Math.round(S.subs * ((S.rep-50)/100) * 0.004);
+  if(drift!==0){ S.subs=Math.max(0,S.subs+drift); }
+  // тренды
+  if(S.trendDays>0){ S.trendDays--; if(S.trendDays===0){ S.trend=null; log('Тренд угас.','info'); } }
+  else if(Math.random()<0.35){ S.trend=pick(Object.keys(NICHES)); S.trendDays=rint(2,4);
+    const tn=NICHES[S.trend].name;
+    log(`📈 Новый тренд: «${tn}»${S.trend===S.niche?' — это твоя ниша!':''}`,'info'); }
+  log(`— День ${S.day}. Энергия восстановлена.`,'info');
+  render(); save();
+}
+function promoteCost(){ return Math.round(40 + S.subs*0.25); }
+function promote(){
+  const c = promoteCost();
+  if(S.money < c){ toast('Не хватает денег','bad'); return; }
+  S.money -= c;
+  const g = rint(10, 60) + Math.round(S.subs*rnd(0.005,0.02)) + S.skills.seo*8;
+  const v = g*rint(2,6);
+  S.subs+=g; S.views+=v;
+  log(`Реклама канала: +${fmt(g)} подписчиков, +${fmt(v)} просмотров.`,'good');
+  toast(`📣 +${fmt(g)} подп.`);
+  checkMilestones(); render(); save();
+}
+
+/* =========================================================================
+   РЕНДЕР
+   ========================================================================= */
+let activeTab = 'studio';
+function render(){
+  // header
+  $('#hdrName').textContent = S.name;
+  $('#stSubs').textContent = fmt(S.subs);
+  $('#stViews').textContent = fmt(S.views);
+  $('#stMoney').textContent = money(S.money);
+  $('#stCreative').textContent = fmt(S.creative);
+  $('#stRep').textContent = Math.round(S.rep);
+  $('#stDay').textContent = S.day;
+  const me = maxEnergy();
+  $('#enTxt').textContent = `${Math.round(S.energy)}/${me}`;
+  $('#enFill').style.width = clamp(S.energy/me*100,0,100)+'%';
+
+  const nUnseen = S.events.filter(e=>!e.seen).length;
+  const badge = $('#evBadge');
+  if(nUnseen>0){ badge.textContent=nUnseen; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+
+  renderTab();
+}
+function tabBtnActive(){
+  document.querySelectorAll('#tabs button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===activeTab);
+  });
+}
+function renderTab(){
+  tabBtnActive();
+  const c = $('#tabContent');
+  if(activeTab==='studio')  c.innerHTML = viewStudio();
+  if(activeTab==='shop')    c.innerHTML = viewShop();
+  if(activeTab==='skills')  c.innerHTML = viewSkills();
+  if(activeTab==='videos')  c.innerHTML = viewVideos();
+  if(activeTab==='events')  c.innerHTML = viewEvents();
+  if(activeTab==='channel'){ c.innerHTML = viewChannel(); drawChart(); }
+  bindDynamic();
+}
+
+function trendBanner(){
+  if(!S.trend) return '';
+  const t = NICHES[S.trend];
+  const mine = S.trend===S.niche;
+  return `<div class="trend"><span class="fire">🔥</span> Сейчас в тренде: <b>${t.em} ${t.name}</b>
+    ${mine?'<span class="pill" style="border-color:var(--accent);color:var(--accent)">твоя ниша! x1.85 к охвату</span>':'<span class="pill">не твоя ниша</span>'}
+    <span class="pill">осталось ${S.trendDays} дн.</span></div>`;
+}
+
+function viewStudio(){
+  const N = NICHES[S.niche];
+  let cards='';
+  for(const [k,T] of Object.entries(VTYPES)){
+    const dis = S.energy < T.energy ? 'disabled':'';
+    cards += `<div class="vtype ${dis}" data-vtype="${k}">
+      <div class="t">${T.name}</div>
+      <div class="d">${T.ds}</div>
+      <div class="cost">⚡ ${T.energy} энергии · +${T.cr} креатива</div>
+    </div>`;
+  }
+  return `
+  <div class="panel">
+    <h2>🎬 Студия · ${N.em} ${N.name}</h2>
+    ${trendBanner()}
+    <h3>Снять видео</h3>
+    <div class="vtypes">${cards}</div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost" id="restBtn">💤 Следующий день (энергия +100%)</button>
+      <button class="btn ghost" id="promoBtn">📣 Реклама канала · ${money(promoteCost())}</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>📰 Лента</h2>
+    <div class="feed" id="feed">${renderFeed()}</div>
+  </div>`;
+}
+function renderFeed(){
+  if(!S.log.length) return '<p class="muted">Пока пусто. Сними первое видео!</p>';
+  return S.log.map(l=>`<div class="logline ${l.c}"><span class="tm">Д${l.d}</span>${l.m}</div>`).join('');
+}
+
+function viewShop(){
+  let items='';
+  for(const [k,E] of Object.entries(EQUIP)){
+    const lv=S.equip[k], mx=lv>=EQUIP_MAX;
+    const c=equipCost(k);
+    let segs=''; for(let i=0;i<EQUIP_MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
+    items += `<div class="item">
+      <div class="em">${E.em}</div>
+      <div class="info"><div class="nm">${E.name} <span class="pill">ур. ${lv}/${EQUIP_MAX}</span></div>
+        <div class="ds">${E.ds}</div><div class="lvlbar">${segs}</div></div>
+      <div class="buy">
+        <div class="price">${mx?'MAX':money(c)}</div>
+        <button class="btn sm" data-buyeq="${k}" ${mx||S.money<c?'disabled':''}>${mx?'✓':'Купить'}</button>
+      </div></div>`;
+  }
+  return `<div class="panel"><h2>🛒 Магазин оборудования</h2>
+    <p class="muted small">Оборудование повышает качество роликов и охваты. Компьютер также поднимает максимум энергии.</p>
+    ${items}</div>`;
+}
+
+function viewSkills(){
+  let items='';
+  for(const [k,SK] of Object.entries(SKILLS)){
+    const lv=S.skills[k], mx=lv>=SKILL_MAX, c=skillCost(k);
+    let segs=''; for(let i=0;i<SKILL_MAX;i++) segs+=`<div class="seg ${i<lv?'on':''}"></div>`;
+    items += `<div class="item">
+      <div class="em">${SK.em}</div>
+      <div class="info"><div class="nm">${SK.name} <span class="pill">ур. ${lv}/${SKILL_MAX}</span></div>
+        <div class="ds">${SK.ds}</div><div class="lvlbar">${segs}</div></div>
+      <div class="buy">
+        <div class="price">${mx?'MAX':money(c)+' · ⚡20'}</div>
+        <button class="btn sm" data-train="${k}" ${mx||S.money<c||S.energy<20?'disabled':''}>${mx?'✓':'Учить'}</button>
+      </div></div>`;
+  }
+  return `<div class="panel"><h2>📈 Навыки</h2>
+    <p class="muted small">Прокачка тратит деньги и 20 энергии. Навыки — главный множитель роста на длинной дистанции.</p>
+    ${items}</div>`;
+}
+
+function viewVideos(){
+  if(!S.videos.length) return `<div class="panel"><h2>📼 Мои видео</h2><p class="muted">Ещё ничего не снято.</p></div>`;
+  const rows = S.videos.map(v=>{
+    const N=NICHES[v.niche];
+    return `<tr>
+      <td>${v.viral?'<span class="vir">🔥 </span>':''}${v.title}</td>
+      <td class="num">${fmt(v.views)}</td>
+      <td class="num">${v.subs>=0?'+':''}${fmt(v.subs)}</td>
+      <td class="num">${fmt(v.likes)}</td>
+      <td class="num">${money(v.money)}</td>
+      <td class="num">${v.q}</td>
+      <td class="num muted">Д${v.day}</td></tr>`;
+  }).join('');
+  return `<div class="panel"><h2>📼 Мои видео <span class="muted small">(${S.stats.videosMade} всего)</span></h2>
+    <div style="overflow:auto">
+    <table><thead><tr><th>Название</th><th style="text-align:right">Просм.</th><th style="text-align:right">Подп.</th><th style="text-align:right">Лайки</th><th style="text-align:right">Доход</th><th style="text-align:right">Кач-во</th><th style="text-align:right">День</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></div>`;
+}
+
+function viewEvents(){
+  const unseen = S.events.filter(e=>!e.seen);
+  if(!unseen.length) return `<div class="panel"><h2>📨 События</h2><p class="muted">Новых событий нет. Снимай видео — они появляются по ходу дела.</p></div>`;
+  let html='';
+  S.events.forEach((ev,idx)=>{
+    if(ev.seen) return;
+    const def = EVENTS.find(e=>e.id===ev.id);
+    const btns = def.choices.map((ch,ci)=>`<button class="btn sm" data-ev="${idx}" data-choice="${ci}">${ch.t}</button>`).join('');
+    html += `<div class="panel" style="border-color:var(--warn)">
+      <h2>${def.title} <span class="pill">Д${ev.day}</span></h2>
+      <p>${def.text}</p>
+      <div class="row">${btns}</div></div>`;
+  });
+  return html;
+}
+
+function viewChannel(){
+  const N=NICHES[S.niche];
+  const nextMile = MILES.find(m=>!S.milestones[m.n]);
+  const achHtml = ACHS.map(a=>`<div class="ach ${S.achs[a.id]?'got':''}">
+    <div class="em">${a.em}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div></div>`).join('');
+  return `<div class="panel">
+    <h2>📊 Аналитика канала</h2>
+    <div class="kpi">
+      <div class="box"><div class="v subs" style="color:var(--accent)">${fmt(S.subs)}</div><div class="k">Подписчики</div></div>
+      <div class="box"><div class="v">${fmt(S.views)}</div><div class="k">Всего просмотров</div></div>
+      <div class="box"><div class="v" style="color:var(--gold)">${money(S.money)}</div><div class="k">Баланс</div></div>
+      <div class="box"><div class="v">${S.stats.virals}</div><div class="k">Вирусных видео</div></div>
+      <div class="box"><div class="v">${fmt(S.stats.bestViews)}</div><div class="k">Рекорд просмотров</div></div>
+      <div class="box"><div class="v">${Math.round(S.rep)}</div><div class="k">Репутация</div></div>
+    </div>
+    <h3>Рост подписчиков</h3>
+    <canvas id="chart" width="1000" height="220"></canvas>
+    ${nextMile?`<p class="muted small" style="margin-top:10px">Следующая цель: <b>${fmt(nextMile.n)}</b> подписчиков · осталось ${fmt(nextMile.n-S.subs)}</p>`:'<p class="muted small">Все цели достигнуты — ты легенда! ❤️</p>'}
+    <p class="small">Ниша: <b>${N.em} ${N.name}</b> · Монетизация: <b>${S.monetized?'включена ✅':'нет (нужно 1K подп.)'}</b></p>
+  </div>
+  <div class="panel"><h2>🏅 Достижения <span class="muted small">(${Object.keys(S.achs).length}/${ACHS.length})</span></h2>
+    <div class="achs">${achHtml}</div></div>`;
+}
+
+function drawChart(){
+  const cv=$('#chart'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const d=S.history; if(d.length<2) return;
+  const max=Math.max(...d,1), pad=10;
+  ctx.beginPath();
+  d.forEach((v,i)=>{
+    const x=pad+(W-2*pad)*i/(d.length-1);
+    const y=H-pad-(H-2*pad)*(v/max);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.strokeStyle='#39d353'; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.stroke();
+  // заливка
+  ctx.lineTo(pad+(W-2*pad),H-pad); ctx.lineTo(pad,H-pad); ctx.closePath();
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(57,211,83,.35)'); g.addColorStop(1,'rgba(57,211,83,0)');
+  ctx.fillStyle=g; ctx.fill();
+}
+
+/* привязка обработчиков к динамическому содержимому */
+function bindDynamic(){
+  document.querySelectorAll('[data-vtype]').forEach(el=>el.onclick=()=>makeVideo(el.dataset.vtype));
+  document.querySelectorAll('[data-buyeq]').forEach(el=>el.onclick=()=>buyEquip(el.dataset.buyeq));
+  document.querySelectorAll('[data-train]').forEach(el=>el.onclick=()=>trainSkill(el.dataset.train));
+  document.querySelectorAll('[data-ev]').forEach(el=>el.onclick=()=>resolveEvent(+el.dataset.ev, +el.dataset.choice));
+  const rb=$('#restBtn'); if(rb) rb.onclick=nextDay;
+  const pb=$('#promoBtn'); if(pb) pb.onclick=promote;
+}
+
+/* =========================================================================
+   ONBOARDING + BOOTSTRAP
+   ========================================================================= */
+let selNiche=null;
+function buildOnboard(){
+  const grid=$('#nicheGrid');
+  grid.innerHTML=Object.entries(NICHES).map(([k,n])=>
+    `<div class="niche" data-n="${k}"><span class="em">${n.em}</span><span class="nm">${n.name}</span><span class="rp">RPM $${n.rpm}</span></div>`).join('');
+  grid.querySelectorAll('.niche').forEach(el=>el.onclick=()=>{
+    grid.querySelectorAll('.niche').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel'); selNiche=el.dataset.n;
+  });
+  $('#startBtn').onclick=()=>{
+    const nm=$('#chanName').value.trim() || 'Мой канал';
+    if(!selNiche){ toast('Выбери нишу','bad'); return; }
+    S=freshState(nm, selNiche);
+    log(`Канал «${nm}» создан. Удачи! 🎬`,'good');
+    save(); showGame();
+  };
+}
+function showGame(){
+  $('#onboard').classList.add('hidden');
+  $('#game').classList.remove('hidden');
+  render();
+}
+function confirmModal(title, text, onYes){
+  const box=$('#modalBox');
+  box.innerHTML=`<h3>${title}</h3><p>${text}</p>
+    <div class="actions"><button class="btn danger" id="mNo" style="flex:1">Отмена</button>
+    <button class="btn" id="mYes" style="flex:1">Да</button></div>`;
+  $('#modal').classList.remove('hidden');
+  $('#mNo').onclick=()=>$('#modal').classList.add('hidden');
+  $('#mYes').onclick=()=>{ $('#modal').classList.add('hidden'); onYes(); };
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  buildOnboard();
+  // tabs
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{ activeTab=b.dataset.tab; renderTab(); });
+  $('#saveBtn').onclick=()=>{ save(); toast('💾 Сохранено'); };
+  $('#resetBtn').onclick=()=>confirmModal('Сбросить прогресс?','Весь канал будет удалён навсегда. Точно?',()=>{
+    localStorage.removeItem(SAVE_KEY); location.reload();
+  });
+  const saved=load();
+  if(saved){ S=saved; showGame(); }
+});
+</script>
+</body>
+</html>
