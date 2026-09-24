@@ -37,7 +37,9 @@
     background:var(--bg0); color:var(--txt);
     font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
     min-height:100vh; line-height:1.45; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    user-select:none; -webkit-user-select:none; -moz-user-select:none; -webkit-tap-highlight-color:transparent;
   }
+  input,textarea{ user-select:text; -webkit-user-select:text; }
   #bg{position:fixed;inset:0;z-index:-2;pointer-events:none}
   body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
     background:radial-gradient(1200px 700px at 85% -8%,var(--glow1),transparent 60%),
@@ -134,8 +136,7 @@
 
   /* ===================== ПАНЕЛИ / ОБЩЕЕ ===================== */
   .panel{background:linear-gradient(180deg,var(--panel),var(--bg1));border:1px solid var(--line);border-radius:var(--radius);
-    padding:18px;margin-bottom:16px;box-shadow:var(--shadow-sm);animation:fadeIn .35s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    padding:18px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
   .panel h2{margin:0 0 14px;font-size:19px;display:flex;align-items:center;gap:9px}
   .panel h3{margin:18px 0 9px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
   .row{display:flex;gap:14px;flex-wrap:wrap}
@@ -366,6 +367,12 @@ ru:{
   qk_subs:'Набрать {n} подписчиков', qk_videos:'Снять {n} видео', qk_viral:'Снять {n} вирусных видео',
   qk_stream:'Провести {n} стримов', qk_skill:'Прокачать навык до ур. {n}', qk_money:'Накопить ${n}',
   you:'ТЫ', keysHint:'Клавиши: <kbd>Пробел</kbd> видео · <kbd>S</kbd> стрим · <kbd>N</kbd> день',
+  t_boosts:'Прокачка', boostsTitle:'Бесконечная прокачка', boostsHint:'Апгрейды без потолка: цена растёт, эффект копится вечно. Главный источник роста в поздней игре.',
+  boostBonus:'сейчас', boostNext:'уровень',
+  bq:'Продакшн', bqD:'+5% к качеству видео за уровень', br:'Алгоритм', brD:'+5% к охвату за уровень',
+  bm:'Монетизация', bmD:'+6% к доходу за уровень', bl:'Лояльность', blD:'+5% к конверсии в подписчиков', be:'Выносливость', beD:'+5 к макс. энергии за уровень',
+  worldTitle:'Мировой рейтинг', worldPop:'каналов в мире', yourPlace:'Твоё место', ofWorld:'из',
+  topCreators:'Топ мира', nearYou:'Рядом с тобой', climbing:'Ты обгоняешь тысячи каналов каждый день!',
   rankNames:['Новичок','Любитель','Автор','Профи','Звезда','Легенда','Икона'],
   topicTags:['🔥 Хайп','🧠 Познавательно','😂 Смешно','💤 Спокойно','⚔️ Дерзко','❤️ Душевно'],
   forecast:'Прогноз', fLow:'😐 слабый', fMid:'👍 хороший', fHot:'🔥 огонь',
@@ -419,6 +426,12 @@ en:{
   qk_subs:'Reach {n} subscribers', qk_videos:'Make {n} videos', qk_viral:'Make {n} viral videos',
   qk_stream:'Do {n} live streams', qk_skill:'Level a skill to lv. {n}', qk_money:'Save up ${n}',
   you:'YOU', keysHint:'Keys: <kbd>Space</kbd> video · <kbd>S</kbd> stream · <kbd>N</kbd> day',
+  t_boosts:'Boosts', boostsTitle:'Endless boosts', boostsHint:'Uncapped upgrades: cost rises, effect stacks forever. The main growth source in the late game.',
+  boostBonus:'now', boostNext:'level',
+  bq:'Production', bqD:'+5% video quality per level', br:'Algorithm', brD:'+5% reach per level',
+  bm:'Monetization', bmD:'+6% income per level', bl:'Loyalty', blD:'+5% subscriber conversion per level', be:'Stamina', beD:'+5 max energy per level',
+  worldTitle:'World ranking', worldPop:'creators worldwide', yourPlace:'Your place', ofWorld:'of',
+  topCreators:'World top', nearYou:'Near you', climbing:'You pass thousands of channels every day!',
   rankNames:['Rookie','Amateur','Creator','Pro','Star','Legend','Icon'],
   topicTags:['🔥 Hype','🧠 Smart','😂 Funny','💤 Chill','⚔️ Bold','❤️ Heartfelt'],
   forecast:'Forecast', fLow:'😐 weak', fMid:'👍 good', fHot:'🔥 fire',
@@ -501,6 +514,29 @@ const ACHS=[
 const AVATARS=['🎬','🌲','🎮','🎵','🍳','💻','🐺','🔥','⚡','🚀','🐱','👑','🎨','📸','🦊','🌙'];
 const RANK_MIN=[0,1000,10000,100000,1000000,10000000,100000000];
 function rankOf(subs){ let i=0; for(let k=0;k<RANK_MIN.length;k++) if(subs>=RANK_MIN[k]) i=k; return (t('rankNames')||[])[i]||''; }
+
+/* ---- Бесконечная прокачка ---- */
+const BOOSTS={
+  quality:{em:'📹',nm:'bq',ds:'bqD',base:500,mult:1.55},
+  reach:{em:'🔍',nm:'br',ds:'brD',base:600,mult:1.6},
+  money:{em:'💰',nm:'bm',ds:'bmD',base:700,mult:1.6},
+  loyalty:{em:'🧲',nm:'bl',ds:'blD',base:800,mult:1.62},
+  energy:{em:'⚡',nm:'be',ds:'beD',base:400,mult:1.5},
+};
+function bLvl(k){ return (S.boosts&&S.boosts[k])||0; }
+function boostCost(k){ return Math.round(BOOSTS[k].base*Math.pow(BOOSTS[k].mult,bLvl(k))); }
+const qBoost=()=>1+bLvl('quality')*0.05;
+const reachBoost=()=>1+bLvl('reach')*0.05;
+const moneyBoost=()=>1+bLvl('money')*0.06;
+const loyaltyBoost=()=>1+bLvl('loyalty')*0.05;
+
+/* ---- Мировой рейтинг: 560 миллиардов каналов ---- */
+const WORLD_POP=560e9, WORLD_TOP=300e6, WORLD_E=3;
+function worldRank(){ const p=clamp(Math.log10(S.subs+1)/Math.log10(WORLD_TOP+1),0,1); return Math.max(1,Math.round(WORLD_POP*Math.pow(1-p,WORLD_E))); }
+function subsForRank(r){ r=clamp(r,1,WORLD_POP); const p=1-Math.pow(r/WORLD_POP,1/WORLD_E); return Math.max(0,Math.round(Math.pow(10,p*Math.log10(WORLD_TOP+1))-1)); }
+function seededRnd(n){ let x=(n*2654435761)>>>0; x^=x>>>13; x=(x*1274126177)>>>0; return (x>>>0)/4294967296; }
+function neighborName(rank){ const h=Math.floor(seededRnd(rank+7)*1e9); return RIVAL_NAMES[h%RIVAL_NAMES.length]+((h%9000)+100); }
+const TOP_CREATORS=[{name:'GigaTube',subs:300e6},{name:'MegaMind',subs:215e6},{name:'ViralViktor',subs:158e6},{name:'QueenStream',subs:120e6},{name:'TheAlgorithm',subs:96e6}];
 const RIVAL_NAMES=['PixelStorm','MrGreenTV','LunaVlogs','TechNova','ChefFuego','WildRoman','BeatKing','FitZone','NightOwl','GamerX','AquaMind','RetroWave','SkyHigh','UrbanFox','NeoTube','ViralVira','DarkForest','ProPlay'];
 const COMMENT_NAMES=['alex_99','maria.k','proGamer','leshiy','sunflower','n1ck','kotya','denchik','fox_tv','vasya','glitch','moon_river','tom','bee','zed','arina'];
 const COMMENT_AV=['🙂','😎','🔥','😂','😮','👍','🤔','😍','🐱','🦊','🌸','💀','🤖','👀','🎧','🍕'];
@@ -527,7 +563,7 @@ function fmt(n){ n=Math.round(n);
 const money=n=>'$'+fmt(n);
 function levelFromXp(xp){ return 1+Math.floor(Math.sqrt(Math.max(0,xp)/40)); }
 function xpForLevel(l){ return 40*(l-1)*(l-1); }
-function maxEnergy(){ return 100 + S.equip.pc*10 + (S.level-1)*5; }
+function maxEnergy(){ return 100 + S.equip.pc*10 + (S.level-1)*5 + bLvl('energy')*5; }
 
 /* ---- звук ---- */
 let AC=null;
@@ -588,6 +624,7 @@ function freshState(name,niche,keep){
     skills:{editing:0,charisma:0,seo:0,thumb:0,writing:0},
     staff:{editor:0,designer:0,writer:0,manager:0,moderator:0},
     merch:{}, sponsorActive:null, sponsorOffers:[], sponsorRefresh:0,
+    boosts:{quality:0,reach:0,money:0,loyalty:0,energy:0}, collabCd:{},
     comments:[], topics:[], topicSel:-1,
     videos:[], log:[], events:[],
     monetized:false, milestones:{}, achs:{}, trend:null, trendDays:0,
@@ -662,17 +699,17 @@ function makeVideo(typeKey){
   let viralRoll=1,viral=false; const r=Math.random();
   const vc=0.02+sk.writing*0.004+S.staff.writer*0.005+(trendMatch?0.03:0)+(topic.hot>=1.3?0.02:0);
   if(r<vc){ viralRoll=rnd(9,42); viral=true; } else if(r<0.18){ viralRoll=rnd(1.6,3.2); } else { viralRoll=rnd(0.7,1.35); }
-  const discovery=Math.pow(q,1.85)*(13+sk.seo*9)*seoF*ctr*trendBonus*viralRoll*repF*authority*pmult();
+  const discovery=Math.pow(q,1.85)*(13+sk.seo*9)*seoF*ctr*trendBonus*viralRoll*repF*authority*pmult()*reachBoost()*qBoost();
   const subReach=S.subs*clamp(0.20+q*0.02,0.12,0.6);
   let views=Math.max(Math.round(discovery+subReach),rint(5,40));
   const sat=clamp(1-S.subs/2e9,0.02,1);
-  let appeal=clamp(q*0.004*N.appeal*(1+sk.charisma*0.07)*ctr,0.002,0.09);
+  let appeal=clamp(q*0.004*N.appeal*(1+sk.charisma*0.07)*ctr,0.002,0.09)*loyaltyBoost();
   let dSubs=Math.round(discovery*appeal*sat*(topic.hot>=1.3?1.1:1));
   if(q<3&&S.subs>50) dSubs-=Math.round(S.subs*0.008*(3-q));
   dSubs=Math.max(dSubs,-Math.round(S.subs*0.05));
   const likes=Math.round(views*(0.018+q*0.004));
   const adBonus=1+S.equip.soft*0.03;
-  let earned=S.monetized?Math.round(views/1000*N.rpm*adBonus*pmult()):Math.round(views/1000*N.rpm*0.12);
+  let earned=Math.round((S.monetized?views/1000*N.rpm*adBonus*pmult():views/1000*N.rpm*0.12)*moneyBoost());
   const merchSale=merchIncomeRate()>0?Math.round(views*merchIncomeRate()*rnd(0.4,1.0)):0;
   earned+=merchSale;
 
@@ -694,7 +731,7 @@ function makeVideo(typeKey){
 function liveStream(){ if(S.subs<100){ toast(LANG==='ru'?'Нужно 100 подписчиков':'Need 100 subs','bad'); sfx('error'); return; }
   if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; } S.energy-=30;
   const N=NICHES[S.niche]; const viewers=Math.round(S.subs*rnd(0.05,0.25))+rint(20,200);
-  const superchat=Math.round(viewers*rnd(0.02,0.08)*(1+S.skills.charisma*0.1))+rint(5,50);
+  const superchat=Math.round(viewers*rnd(0.02,0.08)*(1+S.skills.charisma*0.1)*moneyBoost())+rint(5,50);
   const dSubs=Math.round(viewers*rnd(0.01,0.05));
   S.views+=viewers; S.money+=superchat; S.subs+=dSubs; S.stats.streams++; S.rep=clamp(S.rep+1,0,100); addXp(6);
   log('🔴 '+(LANG==='ru'?'Стрим':'Stream')+': '+fmt(viewers)+', +'+fmt(dSubs)+', '+money(superchat),'good');
@@ -760,21 +797,25 @@ function buyMerch(id){ if(S.subs<5000){ toast(t('merchLocked'),'bad'); return; }
 function genSponsors(){ S.sponsorOffers=[]; const n=rint(2,3); for(let i=0;i<n;i++){ const days=rint(4,9); const daily=Math.round((S.subs*rnd(0.02,0.06)+50)*pmult()); S.sponsorOffers.push({brand:pick(BRANDS),daily,days,repCost:+rnd(0.3,1.2).toFixed(1),sign:Math.round(daily*rnd(0.5,1.5))}); } S.sponsorRefresh=S.day+rint(4,7); }
 function signSponsor(i){ const o=S.sponsorOffers[i]; if(!o) return; S.sponsorActive={brand:o.brand,daily:o.daily,left:o.days,repCost:o.repCost}; S.money+=o.sign; addXp(6); grantAch('sponsor');
   log('💼 '+(LANG==='ru'?'Контракт с ':'Contract with ')+o.brand+': '+money(o.daily)+'/'+t('day').toLowerCase()+' ×'+o.days+(o.sign>0?(' (+'+money(o.sign)+')'):''),'good'); toast('💼 '+o.brand,'gold'); sfx('coin'); S.sponsorOffers.splice(i,1); render(); save(); }
-function growRivals(){ S.rivals.forEach(r=>{ const viral=Math.random()<0.04?rnd(1.2,1.8):1; const grow=Math.pow(Math.max(r.subs,1),0.72)*r.g*22*rnd(0.6,1.4)*viral+rint(10,140); r.subs=Math.round(r.subs+grow); }); }
-function checkNo1(){ const top=Math.max(...S.rivals.map(r=>r.subs)); if(S.subs>top&&S.subs>0&&!S.wasNo1){ S.wasNo1=true; grantAch('no1'); toast('👑 #1!','gold'); log(LANG==='ru'?'👑 Ты №1!':'👑 You are #1!','viral'); confetti(160); } }
+function buyBoost(k){ const c=boostCost(k); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } S.money-=c; S.boosts[k]=(S.boosts[k]||0)+1; if(k==='energy') S.energy=maxEnergy(); addXp(4);
+  log('🚀 '+t(BOOSTS[k].nm)+' → '+t('lvl')+S.boosts[k],'good'); toast('🚀 '+t(BOOSTS[k].nm)+' '+t('lvl')+S.boosts[k]); sfx('coin'); render(); save(); }
+function collabNeighbor(rank){ const name=neighborName(rank); const cd=S.collabCd||(S.collabCd={}); if(cd[name]&&S.day<cd[name]){ toast(t('collabCooldown'),'bad'); sfx('error'); return; } if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
+  S.energy-=30; cd[name]=S.day+3; const nsubs=subsForRank(rank); const g=Math.round(Math.min(nsubs*rnd(0.01,0.04),S.subs*1.5+3000))+rint(50,400); S.subs+=g; S.views+=g*rint(3,7); S.rep=clamp(S.rep+1,0,100); addXp(6); grantAch('collab');
+  log('🤝 '+name+': +'+fmt(g),'good'); toast('🤝 +'+fmt(g),'gold'); sfx('coin'); floatNum('+'+fmt(g)+' 👤','var(--accent)'); checkMilestones(); checkQuests(); pushHist(); render(); save(); }
+function checkNo1(){ if(worldRank()<=1&&!S.wasNo1){ S.wasNo1=true; grantAch('no1'); toast('👑 #1!','gold'); log(LANG==='ru'?'👑 Ты №1 в мире!':'👑 You are #1 worldwide!','viral'); confetti(180); } }
 function collabRival(name){ const r=S.rivals.find(x=>x.name===name); if(!r) return; if(r.cd&&S.day<r.cd){ toast(t('collabCooldown'),'bad'); sfx('error'); return; } if(S.energy<30){ toast(t('lowEnergy'),'bad'); sfx('error'); return; }
   S.energy-=30; r.cd=S.day+3; const g=Math.round(Math.min(r.subs*rnd(0.02,0.06),S.subs*2+5000))+rint(30,300); S.subs+=g; S.views+=g*rint(3,7); S.rep=clamp(S.rep+2,0,100); S.collabDone=true; addXp(6); grantAch('collab');
   log('🤝 '+(LANG==='ru'?'Коллаб с ':'Collab with ')+r.name+': +'+fmt(g),'good'); toast('🤝 +'+fmt(g),'gold'); sfx('coin'); floatNum('+'+fmt(g)+' 👤','var(--accent)'); checkMilestones(); checkQuests(); pushHist(); render(); save(); }
 function nextDay(){ S.day++; S.energy=maxEnergy();
   const drift=Math.round(S.subs*((S.rep-50)/100)*0.004); if(drift!==0) S.subs=Math.max(0,S.subs+drift);
-  if(S.staff.manager>0){ const inc=Math.round(S.subs*0.02*S.staff.manager*(S.monetized?1:0.2)*pmult()); if(inc>0){ S.money+=inc; log('💼 '+(LANG==='ru'?'Менеджер: +':'Manager: +')+money(inc),'good'); } }
-  const mr=merchIncomeRate(); if(mr>0){ const inc=Math.round(S.subs*mr*rnd(0.8,1.2)); if(inc>0){ S.money+=inc; log('🧢 '+(LANG==='ru'?'Мерч: +':'Merch: +')+money(inc),'good'); } }
+  if(S.staff.manager>0){ const inc=Math.round(S.subs*0.02*S.staff.manager*(S.monetized?1:0.2)*pmult()*moneyBoost()); if(inc>0){ S.money+=inc; log('💼 '+(LANG==='ru'?'Менеджер: +':'Manager: +')+money(inc),'good'); } }
+  const mr=merchIncomeRate(); if(mr>0){ const inc=Math.round(S.subs*mr*rnd(0.8,1.2)*moneyBoost()); if(inc>0){ S.money+=inc; log('🧢 '+(LANG==='ru'?'Мерч: +':'Merch: +')+money(inc),'good'); } }
   if(S.sponsorActive){ S.money+=S.sponsorActive.daily; S.rep=clamp(S.rep-S.sponsorActive.repCost,0,100); S.sponsorActive.left--; log('💼 '+S.sponsorActive.brand+': +'+money(S.sponsorActive.daily),'good');
     if(S.sponsorActive.left<=0){ log((LANG==='ru'?'Контракт с ':'Contract with ')+S.sponsorActive.brand+(LANG==='ru'?' завершён.':' ended.'),'info'); S.sponsorActive=null; } }
   if(S.day>=S.sponsorRefresh) genSponsors();
   if(S.trendDays>0){ S.trendDays--; if(S.trendDays===0){ S.trend=null; log(LANG==='ru'?'Тренд угас.':'Trend faded.','info'); } }
   else if(Math.random()<0.35){ S.trend=pick(Object.keys(NICHES)); S.trendDays=rint(2,4); log('📈 '+(LANG==='ru'?'Тренд: ':'Trend: ')+NICHES[S.trend].em+' '+L(NICHES[S.trend].nm)+(S.trend===S.niche?(LANG==='ru'?' — твоя ниша!':' — yours!'):''),'info'); }
-  growRivals(); checkNo1(); checkQuests(); addXp(2); log('— '+t('day')+' '+S.day+'.','info'); pushHist(); render(); save(); }
+  checkNo1(); checkQuests(); addXp(2); log('— '+t('day')+' '+S.day+'.','info'); pushHist(); render(); save(); }
 function promoteCost(){ return Math.round(40+S.subs*0.25); }
 function promote(){ const c=promoteCost(); if(S.money<c){ toast(t('lowMoney'),'bad'); sfx('error'); return; } S.money-=c;
   const g=rint(10,60)+Math.round(S.subs*rnd(0.005,0.02))+S.skills.seo*8, v=g*rint(2,6); S.subs+=g; S.views+=v;
@@ -787,7 +828,7 @@ function doPrestige(){ if(!canPrestige()) return; const keep={achs:S.achs,presti
 /* ============================ РЕНДЕР ============================ */
 const TABS=[
   {id:'dash',ic:'🏠',k:'t_dash'},{id:'studio',ic:'🎬',k:'t_studio'},{id:'shop',ic:'🛒',k:'t_shop'},
-  {id:'skills',ic:'📈',k:'t_skills'},{id:'team',ic:'👥',k:'t_team'},
+  {id:'skills',ic:'📈',k:'t_skills'},{id:'boosts',ic:'🚀',k:'t_boosts'},{id:'team',ic:'👥',k:'t_team'},
   {id:'merch',ic:'🧢',k:'t_merch',lock:()=>S.subs<5000,lockMsg:'merchLocked'},
   {id:'deals',ic:'💼',k:'t_deals',lock:()=>S.subs<2000,lockMsg:'dealsLocked'},
   {id:'videos',ic:'📼',k:'t_videos'},{id:'quests',ic:'🎯',k:'t_quests'},
@@ -824,7 +865,7 @@ function render(){ applyStatic(); applyTheme();
   document.querySelectorAll('#navList .navitem[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTab));
   document.querySelectorAll('#bottomnav button[data-tab]').forEach(el=>el.classList.toggle('active',el.dataset.tab===activeTab));
   const v=$('#view');
-  const map={dash:viewDash,studio:viewStudio,shop:viewShop,skills:viewSkills,team:viewTeam,merch:viewMerch,deals:viewDeals,videos:viewVideos,quests:viewQuests,events:viewEvents,rivals:viewRivals,channel:viewChannel};
+  const map={dash:viewDash,studio:viewStudio,shop:viewShop,skills:viewSkills,boosts:viewBoosts,team:viewTeam,merch:viewMerch,deals:viewDeals,videos:viewVideos,quests:viewQuests,events:viewEvents,rivals:viewRivals,channel:viewChannel};
   v.innerHTML=(map[activeTab]||viewDash)();
   if(activeTab==='dash'){ drawChart('dashChart',S.history[dashMetric],accentCol()); }
   if(activeTab==='channel'){ drawChart('cSubs',S.history.subs,accentCol()); drawChart('cViews',S.history.views,'#5aa9ff'); drawChart('cMoney',S.history.money,'#f2c14e'); }
@@ -904,6 +945,13 @@ function listBlock(dataAttr, obj, lvObj, MAX, costFn, btnKey, titleKey, hintKey)
 const viewShop=()=>listBlock('buyeq',EQUIP,S.equip,EQUIP_MAX,equipCost,'buy','shopTitle','shopHint');
 const viewSkills=()=>listBlock('train',SKILLS,S.skills,SKILL_MAX,skillCost,'learn','skillsTitle','skillsHint');
 const viewTeam=()=>listBlock('hire',STAFF,S.staff,STAFF_MAX,staffCost,'hire','teamTitle','teamHint');
+/* ---- БЕСКОНЕЧНАЯ ПРОКАЧКА ---- */
+function viewBoosts(){ let items='';
+  for(const [k,B] of Object.entries(BOOSTS)){ const lv=bLvl(k),c=boostCost(k); const bonus = k==='energy'?('+'+lv*5+' ⚡'):('+'+(lv*(k==='money'?6:5))+'%');
+    items+=`<div class="item"><div class="em">${B.em}</div><div class="info"><div class="nm">${t(B.nm)} <span class="pill ok">${t('lvl')} ${lv} · ∞</span></div><div class="ds">${t(B.ds)}</div><div class="small" style="margin-top:4px;color:var(--accent)">${t('boostBonus')}: <b>${bonus}</b></div></div>
+      <div class="buy"><div class="price">${money(c)}</div><button class="btn sm" data-boost="${k}" ${S.money<c?'disabled':''}>${t('buy')}</button></div></div>`; }
+  return `<div class="panel"><h2>🚀 ${t('boostsTitle')} <span class="pill">∞</span></h2><p class="muted small">${t('boostsHint')}</p>${items}</div>`;
+}
 
 /* ---- МЕРЧ ---- */
 function viewMerch(){ if(S.subs<5000) return `<div class="panel"><h2>🧢 ${t('t_merch')}</h2><p class="muted">${t('merchLocked')}</p></div>`;
@@ -937,10 +985,26 @@ function viewEvents(){ const un=S.events.filter(e=>!e.seen); if(!un.length) retu
   let html=''; S.events.forEach((ev,idx)=>{ if(ev.seen) return; const def=EVENTS.find(e=>e.id===ev.id); const btns=def.choices.map((ch,ci)=>`<button class="btn sm" data-ev="${idx}" data-choice="${ci}">${L(ch.t)}</button>`).join('');
     html+=`<div class="panel" style="border-color:var(--warn)"><h2>${L(def.title)} <span class="pill">${t('day').slice(0,1)}${ev.day}</span></h2><p>${L(def.text)}</p><div class="row">${btns}</div></div>`; }); return html; }
 /* ---- РЕЙТИНГ ---- */
-function viewRivals(){ const list=[{name:S.name,subs:S.subs,you:true,niche:S.niche}].concat(S.rivals.map(r=>({name:r.name,subs:r.subs,niche:r.niche}))); list.sort((a,b)=>b.subs-a.subs);
-  const rows=list.map((r,i)=>{ let btn=''; if(!r.you){ const rv=S.rivals.find(x=>x.name===r.name); const wait=rv&&rv.cd&&S.day<rv.cd; btn=`<button class="btn sm ${wait?'ghost':''}" data-collab="${r.name}" ${wait||S.energy<30?'disabled':''}>${wait?t('collabCooldown'):t('collabDo')}</button>`; }
-    const face=r.you?(S.avatar+' '):(NICHES[r.niche].em+' '); return `<div class="lb-row ${r.you?'you':''}"><div class="rk">#${i+1}</div><div class="nm">${face}${r.name} ${r.you?`<span class="nn">(${t('you')})</span>`:''}</div><div class="sb">${fmt(r.subs)}</div>${btn}</div>`; }).join('');
-  return `<div class="panel"><h2>🏆 ${t('rivalsTitle')}</h2><p class="muted small">${t('rivalsHint')} ${t('collabTip')}</p>${rows}</div>`; }
+function viewRivals(){ const rank=worldRank();
+  const cd=S.collabCd||{};
+  // окно вокруг игрока
+  let win='';
+  const lo=Math.max(1,rank-4), hi=rank+4;
+  for(let r=lo;r<=hi;r++){
+    if(r===rank){ win+=`<div class="lb-row you"><div class="rk">#${fmt(rank)}</div><div class="nm">${S.avatar} ${S.name} <span class="nn">(${t('you')})</span></div><div class="sb">${fmt(S.subs)}</div></div>`; }
+    else { const nm=neighborName(r), ns=subsForRank(r); let btn=''; if(r<rank){ const wait=cd[nm]&&S.day<cd[nm]; btn=`<button class="btn sm ${wait?'ghost':''}" data-collabn="${r}" ${wait||S.energy<30?'disabled':''}>${wait?t('collabCooldown'):t('collabDo')}</button>`; }
+      win+=`<div class="lb-row"><div class="rk">#${fmt(r)}</div><div class="nm">🎬 ${nm}</div><div class="sb">${fmt(ns)}</div>${btn}</div>`; }
+  }
+  const top = rank>8 ? `<h3>${t('topCreators')}</h3>`+TOP_CREATORS.map((c,i)=>`<div class="lb-row"><div class="rk">#${i+1}</div><div class="nm">👑 ${c.name}</div><div class="sb">${fmt(c.subs)}</div></div>`).join('') : '';
+  return `<div class="panel"><h2>🌍 ${t('worldTitle')}</h2>
+    <div class="kpi" style="margin-bottom:12px">
+      <div class="box"><div class="v" style="color:var(--accent)">#${fmt(rank)}</div><div class="k">${t('yourPlace')}</div></div>
+      <div class="box"><div class="v">${fmt(WORLD_POP)}</div><div class="k">${t('worldPop')}</div></div>
+      <div class="box"><div class="v" style="color:var(--gold)">${rankOf(S.subs)}</div><div class="k">${LANG==='ru'?'Ранг':'Rank'}</div></div>
+    </div>
+    <p class="muted small">${t('climbing')} ${t('collabTip')}</p>
+    ${top}
+    <h3>${t('nearYou')}</h3>${win}</div>`; }
 /* ---- КАНАЛ ---- */
 function viewChannel(){ const N=NICHES[S.niche]; const achHtml=ACHS.map(a=>`<div class="ach ${S.achs[a.id]?'got':''}"><div class="em">${a.em}</div><div class="nm">${L(a.nm)}</div><div class="ds">${L(a.ds)}</div></div>`).join('');
   const prestige=canPrestige()?`<button class="btn purple block" id="prestigeBtn">${t('prestigeBtn')}</button>`:`<p class="muted small">${t('prestigeLocked')}</p>`;
@@ -986,6 +1050,8 @@ function bindView(){
   document.querySelectorAll('[data-sponsor]').forEach(el=>el.onclick=()=>signSponsor(+el.dataset.sponsor));
   document.querySelectorAll('[data-reply]').forEach(el=>el.onclick=()=>replyComment(+el.dataset.reply));
   document.querySelectorAll('[data-collab]').forEach(el=>el.onclick=()=>collabRival(el.dataset.collab));
+  document.querySelectorAll('[data-collabn]').forEach(el=>el.onclick=()=>collabNeighbor(+el.dataset.collabn));
+  document.querySelectorAll('[data-boost]').forEach(el=>el.onclick=()=>buyBoost(el.dataset.boost));
   document.querySelectorAll('[data-ev]').forEach(el=>el.onclick=()=>resolveEvent(+el.dataset.ev,+el.dataset.choice));
   const rb=$('#restBtn'); if(rb) rb.onclick=nextDay; const pb=$('#promoBtn'); if(pb) pb.onclick=promote;
   const pr=$('#prestigeBtn'); if(pr) pr.onclick=()=>confirmModal(t('prestigeTitle'),t('prestigeHint'),doPrestige);
@@ -993,8 +1059,7 @@ function bindView(){
 
 /* ============================ ТИКЕР ============================ */
 let tickI=0;
-function tickerLine(){ const pool=NEWS[LANG]||NEWS.ru; const top=S.rivals&&S.rivals.length?S.rivals.reduce((a,b)=>a.subs>b.subs?a:b):null;
-  const extra=top?`👑 ${LANG==='ru'?'Лидер':'Leader'}: <b>${top.name}</b> (${fmt(top.subs)})`:''; const arr=extra?pool.concat([extra]):pool; return arr[tickI%arr.length]; }
+function tickerLine(){ const pool=NEWS[LANG]||NEWS.ru; const extra=`🌍 ${t('yourPlace')}: <b>#${fmt(worldRank())}</b> ${t('ofWorld')} ${fmt(WORLD_POP)}`; const arr=pool.concat([extra]); return arr[tickI%arr.length]; }
 function startTicker(){ const el=$('#ticker'); if(!el) return; const upd=()=>{ if(!S) return; el.innerHTML='📢 '+tickerLine(); tickI++; }; upd(); setInterval(upd,6000); }
 
 /* ============================ НАСТРОЙКИ ============================ */
@@ -1035,6 +1100,7 @@ function migrate(){ S.staff=S.staff||{editor:0,designer:0,writer:0,manager:0,mod
   S.sponsorOffers=S.sponsorOffers||[]; if(S.sponsorActive===undefined)S.sponsorActive=null; if(S.sponsorRefresh==null)S.sponsorRefresh=0;
   S.rivals=S.rivals&&S.rivals.length?S.rivals:makeRivals(); S.quests=S.quests||[]; S.questsDone=S.questsDone||0; S.prestige=S.prestige||0; S.permaBonus=S.permaBonus||0;
   S.xp=S.xp||0; S.level=S.level||levelFromXp(S.xp); S.theme=S.theme||'nature'; if(S.volume==null)S.volume=0.7; S.avatar=S.avatar||'🎬';
+  S.boosts=S.boosts||{quality:0,reach:0,money:0,loyalty:0,energy:0}; ['quality','reach','money','loyalty','energy'].forEach(k=>{ if(S.boosts[k]==null)S.boosts[k]=0; }); S.collabCd=S.collabCd||{};
   if(!S.history||Array.isArray(S.history)) S.history={subs:[S.subs||0],views:[S.views||0],money:[Math.round(S.money||0)]};
   S.history.subs=S.history.subs||[0]; S.history.views=S.history.views||[0]; S.history.money=S.history.money||[0];
   S.stats=S.stats||{videosMade:0,virals:0,strikes:0,bestViews:0,streams:0,replies:0}; if(S.stats.replies==null)S.stats.replies=0;
